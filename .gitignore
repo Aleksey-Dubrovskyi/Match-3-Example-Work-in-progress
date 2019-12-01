@@ -1,0 +1,9 @@
+
+Library/**
+Temp/**
+
+*.csproj
+*.sln
+*.tmp_proj
+*_wpftmp.csproj
+*.vs

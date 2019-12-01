@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -30,6 +30,8 @@ public class BoardManager : MonoBehaviour {
 		for (int x = 0; x < xSize; x++) {
 			for (int y = 0; y < ySize; y++) {
 				GameObject newTile = Instantiate(tile, new Vector3(startX + (xOffset * x), startY + (yOffset * y), 0), tile.transform.rotation);
+                // для простоти пошуку потрібного об'єкту ставим унікальне ім'я по якому і будемо шукати
+                newTile.name = $"{tile.name}_{x}_{y}";
 				tiles[x, y] = newTile;
                 newTile.transform.parent = transform;
                 List<Sprite> possibleCharacters = new List<Sprite>();
