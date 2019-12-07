@@ -4,15 +4,22 @@ using UnityEngine;
 
 public class Tiles : MonoBehaviour
 {
-    GameObject otherPrefab;
+    public GameObject otherPrefab;
+    public GameObject arrowPrefab;
+    public GameObject colorBomb;
+    public GameObject adjacentBomb;
 
     Vector2 firstTouchPosition;
     Vector2 secondTouchPosition;
     Vector2 tempPos;
 
-    public bool isMatched = false;
+    public bool isMatched;
+    public bool isColorBomb;
+    public bool isRowBomb;
+    public bool isAdjacentBomb;
+    public bool isColumnBomb;
 
-    float angleDir = 0f;
+    public float angleDir = 0f;
     float swipeResit = 1f;
 
     public int column, row;
@@ -21,22 +28,25 @@ public class Tiles : MonoBehaviour
 
     void Start()
     {
-        //startX = (int)transform.position.x;
-        //startY = (int)transform.position.y;
-        ////row = startY;
-        ////column = startX;
-        ////previousRow = row;
-        ////previousColumn = column;
+        isMatched = false;
+        isColorBomb = false;
+        isAdjacentBomb = false;
+        isRowBomb = false;
+        isColumnBomb = false;
+    }
+
+    void OnMouseOver()
+    {
+        if (Input.GetMouseButtonDown(1))
+        {
+            MakeColorBomb();
+        }
     }
 
     void Update()
     {
-        //FindMatches();
-        if (isMatched)
-        {
-            SpriteRenderer mySPrite = GetComponent<SpriteRenderer>();
-            mySPrite.color = new Color(1f, 1f, 1f, .4f);
-        }
+        
+
         startX = column;
         startY = row;
         if (Mathf.Abs(startX - transform.position.x) > 0.1f)
@@ -99,6 +109,7 @@ public class Tiles : MonoBehaviour
             angleDir = Mathf.Atan2(secondTouchPosition.y - firstTouchPosition.y, secondTouchPosition.x - firstTouchPosition.x) * 180 / Mathf.PI;
             MovePosition();
             BoardManager.instance.gameState = GameState.wait;
+            BoardManager.instance.currentTile = this;
         }
         else
         {
@@ -150,6 +161,16 @@ public class Tiles : MonoBehaviour
 
     IEnumerator PrefabCo()
     {
+        if (isColorBomb)
+        {
+            FindMatch.instance.MatchPicesOfTile(otherPrefab.GetComponent<SpriteRenderer>().sprite);
+            isMatched = true;
+        }
+        else if (otherPrefab.GetComponent<Tiles>().isColorBomb)
+        {
+            FindMatch.instance.MatchPicesOfTile(this.gameObject.GetComponent<SpriteRenderer>().sprite);
+            otherPrefab.GetComponent<Tiles>().isMatched = true;
+        }
         yield return new WaitForSeconds(0.5f);
         if (otherPrefab != null)
         {
@@ -160,13 +181,13 @@ public class Tiles : MonoBehaviour
                 row = previousRow;
                 column = previousColumn;
                 yield return new WaitForSeconds(0.5f);
+                BoardManager.instance.currentTile = null;
                 BoardManager.instance.gameState = GameState.move;
             }
             else
             {
                 BoardManager.instance.DestroyMatches();
             }
-            otherPrefab = null;
         }
     }
 
@@ -200,5 +221,34 @@ public class Tiles : MonoBehaviour
                 }
             }
         }
+    }
+    public void MakeRowBomb()
+    {
+        isRowBomb = true;
+        //this.gameObject.GetComponent<SpriteRenderer>().sprite = null;
+        GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
+        arrow.transform.parent = this.transform;
+    }
+
+    public void MakeColumnBomb()
+    {
+        isColumnBomb = true;
+        //this.gameObject.GetComponent<SpriteRenderer>().sprite = null;
+        GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.Euler(0, 0, 90));
+        arrow.transform.parent = this.transform;
+    }
+
+    public void  MakeColorBomb()
+    {
+        isColorBomb = true;
+        GameObject color = Instantiate(colorBomb, transform.position, Quaternion.identity);
+        color.transform.parent = this.transform;
+    }
+
+    public void MakeAdjacentBomb()
+    {
+        isAdjacentBomb = true;
+        GameObject adjacent = Instantiate(adjacentBomb, transform.position, Quaternion.identity);
+        adjacent.transform.parent = this.transform;
     }
 }

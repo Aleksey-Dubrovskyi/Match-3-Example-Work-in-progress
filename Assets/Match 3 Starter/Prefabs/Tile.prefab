@@ -100,7 +100,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.56, y: 2.56}
+    oldSize: {x: 3.4133334, y: 3.4133334}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -121,3 +121,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6821e7324b96fa4cbae7116139dfd24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  otherPrefab: {fileID: 0}
+  arrowPrefab: {fileID: 4841466821364967405, guid: fdb864a8e3662604182391e6655aecf3,
+    type: 3}
+  colorBomb: {fileID: 3742778944205857998, guid: ccd3cb6ec4b8e2247af015417aa1da0b,
+    type: 3}
+  adjacentBomb: {fileID: 884485035535583433, guid: 2d4dfc0422975664eb9c8779eeac5470,
+    type: 3}
+  isMatched: 0
+  isColorBomb: 0
+  isRowBomb: 0
+  isAdjacentBomb: 0
+  isColumnBomb: 0
+  angleDir: 0
+  column: 0
+  row: 0

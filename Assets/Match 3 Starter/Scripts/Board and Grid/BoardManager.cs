@@ -12,6 +12,9 @@ public class BoardManager : MonoBehaviour
 {
     public static BoardManager instance;
 
+    [SerializeField]
+    GameObject destroyEffect;
+
     public GameState gameState = GameState.move;
 
     public int xSize, ySize, offset;
@@ -21,6 +24,7 @@ public class BoardManager : MonoBehaviour
     [SerializeField]
     List<Sprite> characters = new List<Sprite>();
 
+    public Tiles currentTile;
     public GameObject[,] allTiles;
     // Start is called before the first frame update
     void Start()
@@ -58,11 +62,107 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    bool ColumnOrRow()
+    {
+        int numberHorizontal = 0, numberVertical = 0;
+        Tiles firstTile = FindMatch.instance.allMatches[0].GetComponent<Tiles>();
+        if (firstTile != null)
+        {
+            foreach (var currentTile in FindMatch.instance.allMatches)
+            {
+                Tiles tile = currentTile.GetComponent<Tiles>();
+                if (tile.row == firstTile.row)
+                {
+                    numberHorizontal++;
+                }
+                if (tile.column == firstTile.column)
+                {
+                    numberVertical++;
+                }
+            }
+        }
+        return (numberVertical == 5 || numberHorizontal == 5);
+    }
+
+    void CheckToMakeBombs()
+    {
+        if (FindMatch.instance.allMatches.Count == 4 || FindMatch.instance.allMatches.Count == 7)
+        {
+            FindMatch.instance.CheckBombs();
+        }
+        if (FindMatch.instance.allMatches.Count == 5 || FindMatch.instance.allMatches.Count == 8)
+        {
+            if (ColumnOrRow())
+            {
+                if (currentTile != null)
+                {
+                    if (currentTile.isMatched)
+                    {
+                        if (!currentTile.isColorBomb)
+                        {
+                            currentTile.isMatched = false;
+                            currentTile.MakeColorBomb();
+                        }
+                    }
+                    else
+                    {
+                        if (currentTile.otherPrefab != null)
+                        {
+                            Tiles otherTile = currentTile.otherPrefab.GetComponent<Tiles>();
+                            if (otherTile.isMatched)
+                            {
+                                if (!otherTile.isColorBomb)
+                                {
+                                    otherTile.isMatched = false;
+                                    otherTile.MakeColorBomb();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (currentTile != null)
+                {
+                    if (currentTile.isMatched)
+                    {
+                        if (!currentTile.isAdjacentBomb)
+                        {
+                            currentTile.isMatched = false;
+                            currentTile.MakeAdjacentBomb();
+                        }
+                    }
+                    else
+                    {
+                        if (currentTile.otherPrefab != null)
+                        {
+                            Tiles otherTile = currentTile.otherPrefab.GetComponent<Tiles>();
+                            if (otherTile.isMatched)
+                            {
+                                if (!otherTile.isAdjacentBomb)
+                                {
+                                    otherTile.isMatched = false;
+                                    otherTile.MakeAdjacentBomb();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     void DestroyMatchesAt(int column, int row)
     {
         if (allTiles[column, row].GetComponent<Tiles>().isMatched)
         {
-            FindMatch.instance.allMatches.Remove(allTiles[column, row]);
+            if (FindMatch.instance.allMatches.Count >= 4)
+            {
+                CheckToMakeBombs();
+            }
+            GameObject particlePrefab = Instantiate(destroyEffect, allTiles[column, row].transform.position, Quaternion.identity);
+            Destroy(particlePrefab, .5f);
             Destroy(allTiles[column, row]);
             allTiles[column, row] = null;
         }
@@ -80,6 +180,7 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+        FindMatch.instance.allMatches.Clear();
         StartCoroutine(CollapsingCo());
     }
 
@@ -158,7 +259,7 @@ public class BoardManager : MonoBehaviour
             yield return new WaitForSeconds(.5f);
             DestroyMatches();
         }
-
+        FindMatch.instance.allMatches.Clear();
         yield return new WaitForSeconds(.1f);
         gameState = GameState.move;
         
