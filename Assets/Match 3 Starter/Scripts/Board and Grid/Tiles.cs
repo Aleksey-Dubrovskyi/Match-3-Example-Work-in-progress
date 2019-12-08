@@ -106,9 +106,9 @@ public class Tiles : MonoBehaviour
     {
         if (Mathf.Abs(secondTouchPosition.y - firstTouchPosition.y) > swipeResit || Mathf.Abs(secondTouchPosition.x - firstTouchPosition.x) > swipeResit)
         {
+            BoardManager.instance.gameState = GameState.wait;
             angleDir = Mathf.Atan2(secondTouchPosition.y - firstTouchPosition.y, secondTouchPosition.x - firstTouchPosition.x) * 180 / Mathf.PI;
             MovePosition();
-            BoardManager.instance.gameState = GameState.wait;
             BoardManager.instance.currentTile = this;
         }
         else
@@ -118,45 +118,41 @@ public class Tiles : MonoBehaviour
        
     }
 
+    void CalculationOfPosition(Vector2 direction)
+    {
+        otherPrefab = BoardManager.instance.allTiles[column + (int)direction.x, row + (int)direction.y];
+        previousRow = row;
+        previousColumn = column;
+        otherPrefab.GetComponent<Tiles>().column += -1 * (int)direction.x;
+        otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
+        column += (int)direction.x;
+        row += (int)direction.y;
+        StartCoroutine(PrefabCo());
+    }
+
     void MovePosition()
     {
         if (angleDir > -45 && angleDir <= 45 && column < BoardManager.instance.xSize - 1)
         {
             //Right Swipe
-            otherPrefab = BoardManager.instance.allTiles[column + 1, row];
-            previousRow = row;
-            previousColumn = column;
-            otherPrefab.GetComponent<Tiles>().column -= 1;
-            column += 1;
+            CalculationOfPosition(Vector2.right);
         }
         else if (angleDir > 45 && angleDir <= 135 && row < BoardManager.instance.ySize - 1)
         {
             //Up Swipe
-            otherPrefab = BoardManager.instance.allTiles[column, row + 1];
-            previousRow = row;
-            previousColumn = column;
-            otherPrefab.GetComponent<Tiles>().row -= 1;
-            row += 1;
+            CalculationOfPosition(Vector2.up);
         }
         else if ((angleDir > 135 || angleDir <= -135) && column > 0)
         {
             //Left Swipe
-            otherPrefab = BoardManager.instance.allTiles[column - 1, row];
-            previousRow = row;
-            previousColumn = column;
-            otherPrefab.GetComponent<Tiles>().column += 1;
-            column -= 1;
+            CalculationOfPosition(Vector2.left);
         }
         else if (angleDir < -45 && angleDir >= -135 && row > 0)
         {
             //Down Swipe
-            otherPrefab = BoardManager.instance.allTiles[column, row - 1];
-            previousRow = row;
-            previousColumn = column;
-            otherPrefab.GetComponent<Tiles>().row += 1;
-            row -= 1;
+            CalculationOfPosition(Vector2.down);
         }
-        StartCoroutine(PrefabCo());
+        BoardManager.instance.gameState = GameState.move;
     }
 
     IEnumerator PrefabCo()
