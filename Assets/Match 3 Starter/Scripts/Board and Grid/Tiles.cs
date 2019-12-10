@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Tiles : MonoBehaviour
 {
+    HintManager hintManager;
+
     public GameObject otherPrefab;
     public GameObject arrowPrefab;
     public GameObject colorBomb;
@@ -28,6 +30,7 @@ public class Tiles : MonoBehaviour
 
     void Start()
     {
+        hintManager = FindObjectOfType<HintManager>();
         isMatched = false;
         isColorBomb = false;
         isAdjacentBomb = false;
@@ -45,8 +48,6 @@ public class Tiles : MonoBehaviour
 
     void Update()
     {
-        
-
         startX = column;
         startY = row;
         if (Mathf.Abs(startX - transform.position.x) > 0.1f)
@@ -87,6 +88,10 @@ public class Tiles : MonoBehaviour
 
     void OnMouseDown()
     {
+        if (hintManager != null)
+        {
+            hintManager.DestroyHint();
+        }
         if (BoardManager.instance.gameState == GameState.move)
         {
             firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -123,11 +128,18 @@ public class Tiles : MonoBehaviour
         otherPrefab = BoardManager.instance.allTiles[column + (int)direction.x, row + (int)direction.y];
         previousRow = row;
         previousColumn = column;
-        otherPrefab.GetComponent<Tiles>().column += -1 * (int)direction.x;
-        otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
-        column += (int)direction.x;
-        row += (int)direction.y;
-        StartCoroutine(PrefabCo());
+        if (otherPrefab != null)
+        {
+            otherPrefab.GetComponent<Tiles>().column += -1 * (int)direction.x;
+            otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
+            column += (int)direction.x;
+            row += (int)direction.y;
+            StartCoroutine(PrefabCo());
+        }
+        else
+        {
+            BoardManager.instance.gameState = GameState.move;
+        }
     }
 
     void MovePosition()

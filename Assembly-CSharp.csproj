@@ -53,9 +53,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\BackgroundTile.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\BoardManager.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\CameraScale.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\FindMatch.cs" />
+     <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\HintManager.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\Tiles.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Effects\GUISizePingPong.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Managers\GUIManager.cs" />

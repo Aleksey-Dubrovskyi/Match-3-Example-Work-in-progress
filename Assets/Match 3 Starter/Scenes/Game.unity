@@ -132,7 +132,6 @@ GameObject:
   - component: {fileID: 155782910}
   - component: {fileID: 155782908}
   - component: {fileID: 155782907}
-  - component: {fileID: 155782909}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -156,21 +155,6 @@ Behaviour:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 155782906}
   m_Enabled: 1
---- !u!114 &155782909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 155782906}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 110435c5cdd606a4281ab73787aebf54, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cameraOffset: -10
-  aspectRatio: 0
-  padding: 0
 --- !u!20 &155782910
 Camera:
   m_ObjectHideFlags: 0
@@ -449,6 +433,7 @@ GameObject:
   - component: {fileID: 1691036664}
   - component: {fileID: 1691036663}
   - component: {fileID: 1691036665}
+  - component: {fileID: 1691036666}
   m_Layer: 0
   m_Name: Board Manger
   m_TagString: Untagged
@@ -468,6 +453,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3e5bbfb8c13d8f479f8d00fcbc7884e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boardLayout:
+  - x: 3
+    y: 3
+    tileKind: 0
+  - x: 3
+    y: 4
+    tileKind: 0
+  - x: 1
+    y: 3
+    tileKind: 0
+  - x: 1
+    y: 4
+    tileKind: 0
+  - x: 0
+    y: 4
+    tileKind: 1
+  - x: 0
+    y: 3
+    tileKind: 1
+  - x: 6
+    y: 3
+    tileKind: 1
+  - x: 6
+    y: 4
+    tileKind: 1
+  - x: 2
+    y: 3
+    tileKind: 0
+  - x: 2
+    y: 4
+    tileKind: 0
+  - x: 4
+    y: 3
+    tileKind: 0
+  - x: 4
+    y: 4
+    tileKind: 0
+  - x: 5
+    y: 3
+    tileKind: 0
+  - x: 5
+    y: 4
+    tileKind: 0
   destroyEffect: {fileID: 4955603438672013438, guid: ff042cc074730bc4db3ee28e9929a927,
     type: 3}
   gameState: 1
@@ -475,6 +503,8 @@ MonoBehaviour:
   ySize: 8
   offset: 20
   tilePrefab: {fileID: 1000010131827792, guid: 6417c2a8214b7ab45b35ac5e9e62c2cb, type: 3}
+  breakcableTile: {fileID: 8661071970626953216, guid: 0a184712f235aab4e9cc386ba428c385,
+    type: 3}
   characters:
   - {fileID: 21300000, guid: 2ee3c05b5ca27554992a945764c99837, type: 3}
   - {fileID: 21300000, guid: e61a9cacb6991554e9ba8f0f19381eda, type: 3}
@@ -511,6 +541,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allMatches: []
+--- !u!114 &1691036666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691036662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 744d78554d7c6e24da708ddc2728c905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hintDelay: 60
+  hintParcticle: {fileID: 5892173937027504099, guid: 272a7f37fae1c0b4ab3dd0da324e3d9d,
+    type: 3}
+  currentHint: {fileID: 0}
 --- !u!1 &1860975475
 GameObject:
   m_ObjectHideFlags: 0
