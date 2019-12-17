@@ -32,6 +32,14 @@ public class BoardManager : MonoBehaviour
     [SerializeField]
     GameObject destroyEffect;
 
+    [SerializeField]
+    public int[] scoreGoals;
+    [SerializeField]
+    float refilDelay = 0.5f;
+    [SerializeField]
+    int scoreForOneTile;
+    int streakValue = 1;
+
     public GameState gameState = GameState.move;
 
     public int xSize, ySize, offset;
@@ -47,7 +55,7 @@ public class BoardManager : MonoBehaviour
     BackgroundTile[,] breakbleTiles;
     public GameObject[,] allTiles;
     private bool[,] blankSpaces;
-    // Start is called before the first frame update
+
     void Start()
     {
         breakbleTiles = new BackgroundTile[xSize, ySize];
@@ -110,6 +118,17 @@ public class BoardManager : MonoBehaviour
                     previousBelow = newSprite;
                 }
             }
+
+        }
+        StartCoroutine(SetUpDeadLock());
+    }
+
+    IEnumerator SetUpDeadLock()
+    {
+        yield return new WaitForSeconds(refilDelay);
+        if (IsDeadlocked())
+        {
+            ShuffleBoard();
         }
     }
 
@@ -221,9 +240,16 @@ public class BoardManager : MonoBehaviour
                     breakbleTiles[column, row] = null;
                 }
             }
+            if (GoalManager.Instance != null)
+            {
+                GoalManager.Instance.CompareGoal(allTiles[column, row].GetComponent<SpriteRenderer>().sprite);
+                GoalManager.Instance.UpdateGoals();
+            }
             GameObject particlePrefab = Instantiate(destroyEffect, allTiles[column, row].transform.position, Quaternion.identity);
             Destroy(particlePrefab, .5f);
             Destroy(allTiles[column, row]);
+            GUIManager.instance.Score += (scoreForOneTile * streakValue);
+            SFXManager.instance.PlaySFX(Clip.Clear);
             allTiles[column, row] = null;
         }
     }
@@ -248,9 +274,9 @@ public class BoardManager : MonoBehaviour
     {
         for (int x = 0; x < xSize; x++)
         {
-            for (int y = 0; y < xSize; y++)
+            for (int y = 0; y < ySize; y++)
             {
-                if (!blankSpaces[x,y] && allTiles[x,y] == null)
+                if (!blankSpaces[x, y] && allTiles[x, y] == null)
                 {
                     for (int i = y + 1; i < ySize; i++)
                     {
@@ -264,33 +290,10 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
-        yield return new WaitForSeconds(.4f);
+        yield return new WaitForSeconds(refilDelay * 0.5f);
         StartCoroutine(FillBoard());
     }
 
-    IEnumerator CollapsingCo()
-    {
-        int nullCounter = 0;
-        for (int x = 0; x < xSize; x++)
-        {
-            for (int y = 0; y < ySize; y++)
-            {
-                if (allTiles[x, y] == null)
-                {
-                    nullCounter++;
-                }
-                else if (nullCounter > 0)
-                {
-                    allTiles[x, y].GetComponent<Tiles>().row -= nullCounter;
-                    allTiles[x, y] = null;
-                }
-            }
-            nullCounter = 0;
-        }
-        yield return new WaitForSeconds(.4f);
-        StartCoroutine(FillBoard());
-    }
-    
     void RefillBoard()
     {
         for (int x = 0; x < xSize; x++)
@@ -319,7 +322,7 @@ public class BoardManager : MonoBehaviour
     {
         for (int x = 0; x < xSize; x++)
         {
-            for (int y = 0; y < xSize; y++)
+            for (int y = 0; y < ySize; y++)
             {
                 if (allTiles[x, y] != null)
                 {
@@ -336,27 +339,33 @@ public class BoardManager : MonoBehaviour
     IEnumerator FillBoard()
     {
         RefillBoard();
-        yield return new WaitForSeconds(.5f);
+        yield return new WaitForSeconds(refilDelay);
 
         while (MatchesOnBoard())
         {
-            yield return new WaitForSeconds(.5f);
+            streakValue++;
             DestroyMatches();
+            yield return new WaitForSeconds(2 * refilDelay);
         }
         FindMatch.instance.allMatches.Clear();
-        yield return new WaitForSeconds(.1f);
+        currentTile = null;
+        
         if (IsDeadlocked())
         {
-
+            ShuffleBoard();
+            yield return new WaitForSeconds(refilDelay * 2);
+            DestroyMatches();
         }
+        yield return new WaitForSeconds(refilDelay);
         gameState = GameState.move;
-        
+        streakValue = 1;
+
     }
 
     //Deadlock section
     void SwitchPieces(int column, int row, Vector2 direction)
     {
-        GameObject holder = allTiles[column + (int)direction.x, row + (int)direction.y];
+        GameObject holder = allTiles[column + (int)direction.x, row + (int)direction.y] as GameObject;
 
         allTiles[column + (int)direction.x, row + (int)direction.y] = allTiles[column, row];
         allTiles[column, row] = holder;
@@ -422,18 +431,24 @@ public class BoardManager : MonoBehaviour
             {
                 if (allTiles[x, y] != null)
                 {
-                    if (x < xSize - 1)
+                    if (x < xSize - 2)
                     {
-                        if(SwitchAndCheck(x, y, Vector2.right))
+                        if (SwitchAndCheck(x, y, Vector2.right))
                         {
-                            return false;
+                            if (!blankSpaces[x, y])
+                            {
+                                return false;
+                            }
                         }
                     }
-                    if (y < ySize - 1)
+                    if (y < ySize - 2)
                     {
                         if (SwitchAndCheck(x, y, Vector2.up))
                         {
-                            return false;
+                            if (!blankSpaces[x, y])
+                            {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -447,7 +462,7 @@ public class BoardManager : MonoBehaviour
         List<GameObject> newBoard = new List<GameObject>();
         for (int x = 0; x < xSize; x++)
         {
-            for (int y = 0; y < xSize; y++)
+            for (int y = 0; y < ySize; y++)
             {
                 if (allTiles[x, y] != null)
                 {
@@ -458,7 +473,7 @@ public class BoardManager : MonoBehaviour
 
         for (int x = 0; x < xSize; x++)
         {
-            for (int y = 0; y < xSize; y++)
+            for (int y = 0; y < ySize; y++)
             {
                 if (!blankSpaces[x, y])
                 {

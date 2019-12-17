@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraScale : MonoBehaviour
 {
@@ -19,7 +17,7 @@ public class CameraScale : MonoBehaviour
         {
             RepositionCamera(board.xSize - 1, board.ySize - 1);
         }
-       
+
     }
 
     void RepositionCamera(float x, float y)

@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class BackgroundTile : MonoBehaviour
-{   
+{
     public int hitPoints;
     SpriteRenderer sprite;
 
@@ -14,8 +12,13 @@ public class BackgroundTile : MonoBehaviour
 
     void Update()
     {
-        if (hitPoints <=0)
+        if (hitPoints <= 0)
         {
+            if (GoalManager.Instance != null)
+            {
+                GoalManager.Instance.CompareGoal(sprite.sprite);
+                GoalManager.Instance.UpdateGoals();
+            }
             Destroy(this.gameObject);
         }
     }

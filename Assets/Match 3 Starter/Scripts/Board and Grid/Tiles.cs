@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Tiles : MonoBehaviour
@@ -36,14 +35,6 @@ public class Tiles : MonoBehaviour
         isAdjacentBomb = false;
         isRowBomb = false;
         isColumnBomb = false;
-    }
-
-    void OnMouseOver()
-    {
-        if (Input.GetMouseButtonDown(1))
-        {
-            MakeColorBomb();
-        }
     }
 
     void Update()
@@ -111,16 +102,19 @@ public class Tiles : MonoBehaviour
     {
         if (Mathf.Abs(secondTouchPosition.y - firstTouchPosition.y) > swipeResit || Mathf.Abs(secondTouchPosition.x - firstTouchPosition.x) > swipeResit)
         {
-            BoardManager.instance.gameState = GameState.wait;
             angleDir = Mathf.Atan2(secondTouchPosition.y - firstTouchPosition.y, secondTouchPosition.x - firstTouchPosition.x) * 180 / Mathf.PI;
             MovePosition();
             BoardManager.instance.currentTile = this;
+            if (otherPrefab != null)
+            {
+                BoardManager.instance.gameState = GameState.wait;
+            }
         }
         else
         {
             BoardManager.instance.gameState = GameState.move;
         }
-       
+
     }
 
     void CalculationOfPosition(Vector2 direction)
@@ -134,6 +128,8 @@ public class Tiles : MonoBehaviour
             otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
             column += (int)direction.x;
             row += (int)direction.y;
+            GUIManager.instance.MoveCounter--;
+            SFXManager.instance.PlaySFX(Clip.Swap);
             StartCoroutine(PrefabCo());
         }
         else
@@ -188,7 +184,8 @@ public class Tiles : MonoBehaviour
                 otherPrefab.GetComponent<Tiles>().column = column;
                 row = previousRow;
                 column = previousColumn;
-                yield return new WaitForSeconds(0.5f);
+                SFXManager.instance.PlaySFX(Clip.Swap);
+                yield return new WaitForSeconds(0.1f);
                 BoardManager.instance.currentTile = null;
                 BoardManager.instance.gameState = GameState.move;
             }
@@ -218,7 +215,7 @@ public class Tiles : MonoBehaviour
         if (row > 0 && row < BoardManager.instance.ySize - 1)
         {
             GameObject upPrefab = BoardManager.instance.allTiles[column, row + 1];
-            GameObject downPrefab  = BoardManager.instance.allTiles[column, row - 1];
+            GameObject downPrefab = BoardManager.instance.allTiles[column, row - 1];
             if (upPrefab != null && downPrefab != null)
             {
                 if (upPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite && downPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite)
@@ -246,7 +243,7 @@ public class Tiles : MonoBehaviour
         arrow.transform.parent = this.transform;
     }
 
-    public void  MakeColorBomb()
+    public void MakeColorBomb()
     {
         isColorBomb = true;
         GameObject color = Instantiate(colorBomb, transform.position, Quaternion.identity);

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 public class FindMatch : MonoBehaviour
 {
     public List<GameObject> allMatches = new List<GameObject>();
@@ -104,12 +104,12 @@ public class FindMatch : MonoBehaviour
                         GameObject rightTile = BoardManager.instance.allTiles[x + 1, y];
                         if (leftTile != null && rightTile != null)
                         {
-                            if (leftTile.GetComponent<SpriteRenderer>().sprite == currentTile.gameObject.GetComponent<SpriteRenderer>().sprite && rightTile.GetComponent<SpriteRenderer>().sprite == currentTile.gameObject.GetComponent<SpriteRenderer>().sprite)
+                            if (leftTile.GetComponent<SpriteRenderer>().sprite == currentTile.GetComponent<SpriteRenderer>().sprite && rightTile.GetComponent<SpriteRenderer>().sprite == currentTile.GetComponent<SpriteRenderer>().sprite)
                             {
                                 allMatches.Union(IsRowBomb(currentTile.GetComponent<Tiles>(), leftTile.GetComponent<Tiles>(), rightTile.GetComponent<Tiles>()));
                                 allMatches.Union(IsColumnBomb(currentTile.GetComponent<Tiles>(), leftTile.GetComponent<Tiles>(), rightTile.GetComponent<Tiles>()));
                                 allMatches.Union(IsAdjacentBomb(currentTile.GetComponent<Tiles>(), leftTile.GetComponent<Tiles>(), rightTile.GetComponent<Tiles>()));
-                                GetNearbyTile(currentTile, leftTile, rightTile);
+                                GetNearbyTile(leftTile, currentTile, rightTile);
                             }
                         }
                     }
@@ -121,7 +121,7 @@ public class FindMatch : MonoBehaviour
 
                         if (upTile != null && downTile != null)
                         {
-                            if (upTile.GetComponent<SpriteRenderer>().sprite == currentTile.gameObject.GetComponent<SpriteRenderer>().sprite && downTile.GetComponent<SpriteRenderer>().sprite == currentTile.gameObject.GetComponent<SpriteRenderer>().sprite)
+                            if (upTile.GetComponent<SpriteRenderer>().sprite == currentTile.GetComponent<SpriteRenderer>().sprite && downTile.GetComponent<SpriteRenderer>().sprite == currentTile.GetComponent<SpriteRenderer>().sprite)
                             {
 
                                 allMatches.Union(IsColumnBomb(upTile.GetComponent<Tiles>(), currentTile.GetComponent<Tiles>(), downTile.GetComponent<Tiles>()));
@@ -159,12 +159,32 @@ public class FindMatch : MonoBehaviour
         List<GameObject> tiles = new List<GameObject>();
         for (int x = column - 1; x <= column + 1; x++)
         {
-            for (int y = row - 1; y < row + 1; y++)
+            for (int y = row - 1; y <= row + 1; y++)
             {
-                if (x >= 0 && x < BoardManager.instance.xSize && y >=0 && y < BoardManager.instance.ySize)
+                if (x >= 0 && x < BoardManager.instance.xSize && y >= 0 && y < BoardManager.instance.ySize)
                 {
-                    tiles.Add(BoardManager.instance.allTiles[x, y]);
-                    BoardManager.instance.allTiles[x, y].GetComponent<Tiles>().isMatched = true;
+                    Tiles tile = BoardManager.instance.allTiles[x, y].GetComponent<Tiles>();
+                    if (BoardManager.instance.allTiles[x, y] != null)
+                    {
+                        if (tile.isColumnBomb)
+                        {
+                            tiles.Union(GetColumnTiles(x).ToList());
+                        }
+                        else if (tile.isRowBomb)
+                        {
+                            tiles.Union(GetRowTiles(y).ToList());
+                        }
+                        else if (tile.isColorBomb)
+                        {
+                            MatchPicesOfTile(tile.GetComponent<SpriteRenderer>().sprite);
+                        }
+                        else
+                        {
+                            tiles.Add(BoardManager.instance.allTiles[x, y]);
+                            tile.isMatched = true;
+                        }
+                    }
+
                 }
             }
         }
@@ -178,8 +198,24 @@ public class FindMatch : MonoBehaviour
         {
             if (BoardManager.instance.allTiles[column, y] != null)
             {
-                tiles.Add(BoardManager.instance.allTiles[column, y]);
-                BoardManager.instance.allTiles[column, y].GetComponent<Tiles>().isMatched = true;
+                Tiles tile = BoardManager.instance.allTiles[column, y].GetComponent<Tiles>();
+                if (tile.isRowBomb)
+                {
+                    tiles.Union(GetRowTiles(y).ToList());
+                }
+                else if (tile.isAdjacentBomb)
+                {
+                    tiles.Union(GetAdjacentTiles(column, y).ToList());
+                }
+                else if (tile.isColorBomb)
+                {
+                    MatchPicesOfTile(tile.GetComponent<SpriteRenderer>().sprite);
+                }
+                else
+                {
+                    tiles.Add(BoardManager.instance.allTiles[column, y]);
+                    tile.isMatched = true;
+                }
             }
         }
         return tiles;
@@ -192,8 +228,25 @@ public class FindMatch : MonoBehaviour
         {
             if (BoardManager.instance.allTiles[x, row] != null)
             {
-                tiles.Add(BoardManager.instance.allTiles[x, row]);
-                BoardManager.instance.allTiles[x, row].GetComponent<Tiles>().isMatched = true;
+                Tiles tile = BoardManager.instance.allTiles[x, row].GetComponent<Tiles>();
+                if (tile.isColumnBomb)
+                {
+                    tiles.Union(GetColumnTiles(x).ToList());
+                }
+                else if (tile.isAdjacentBomb)
+                {
+                    tiles.Union(GetAdjacentTiles(x, row).ToList());
+                }
+                else if (tile.isColorBomb)
+                {
+                    MatchPicesOfTile(tile.GetComponent<SpriteRenderer>().sprite);
+                }
+                else
+                {
+                    tiles.Add(BoardManager.instance.allTiles[x, row]);
+                    tile.isMatched = true;
+                }
+
             }
         }
         return tiles;
@@ -217,22 +270,22 @@ public class FindMatch : MonoBehaviour
                 }
 
             }
-            else if(BoardManager.instance.currentTile.otherPrefab != null)
+        }
+        else if (BoardManager.instance.currentTile.otherPrefab != null)
+        {
+            Tiles otherTile = BoardManager.instance.currentTile.otherPrefab.GetComponent<Tiles>();
+            if (otherTile.isMatched)
             {
-                Tiles otherTile = BoardManager.instance.currentTile.otherPrefab.GetComponent<Tiles>();
-                if (otherTile.isMatched)
-                {
-                    otherTile.isMatched = false;
+                otherTile.isMatched = false;
 
-                    if ((BoardManager.instance.currentTile.angleDir > -45 && BoardManager.instance.currentTile.angleDir <= 45)
-                        || (BoardManager.instance.currentTile.angleDir < -135 || BoardManager.instance.currentTile.angleDir >= 135))
-                    {
-                        otherTile.MakeRowBomb();
-                    }
-                    else
-                    {
-                        otherTile.MakeColumnBomb();
-                    }
+                if ((BoardManager.instance.currentTile.angleDir > -45 && BoardManager.instance.currentTile.angleDir <= 45)
+                    || (BoardManager.instance.currentTile.angleDir < -135 || BoardManager.instance.currentTile.angleDir >= 135))
+                {
+                    otherTile.MakeRowBomb();
+                }
+                else
+                {
+                    otherTile.MakeColumnBomb();
                 }
             }
         }
