@@ -112,7 +112,10 @@ public class Tiles : MonoBehaviour
         }
         else
         {
-            BoardManager.instance.gameState = GameState.move;
+            if (BoardManager.instance.gameState != GameState.lose)
+            {
+                BoardManager.instance.gameState = GameState.move;
+            }
         }
 
     }
@@ -128,13 +131,20 @@ public class Tiles : MonoBehaviour
             otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
             column += (int)direction.x;
             row += (int)direction.y;
-            GUIManager.instance.MoveCounter--;
+            if (GUIManager.instance.requiarament.gameType == GameType.Moves)
+            {
+                GUIManager.instance.MoveCounter--;
+            }
+
             SFXManager.instance.PlaySFX(Clip.Swap);
             StartCoroutine(PrefabCo());
         }
         else
         {
-            BoardManager.instance.gameState = GameState.move;
+            if (BoardManager.instance.gameState != GameState.lose)
+            {
+                BoardManager.instance.gameState = GameState.move;
+            }
         }
     }
 
@@ -160,7 +170,10 @@ public class Tiles : MonoBehaviour
             //Down Swipe
             CalculationOfPosition(Vector2.down);
         }
-        BoardManager.instance.gameState = GameState.move;
+        if (BoardManager.instance.gameState != GameState.lose)
+        {
+            BoardManager.instance.gameState = GameState.move;
+        }
     }
 
     IEnumerator PrefabCo()

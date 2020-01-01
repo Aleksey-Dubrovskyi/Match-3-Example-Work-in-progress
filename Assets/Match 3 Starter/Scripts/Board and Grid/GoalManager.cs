@@ -13,8 +13,10 @@ public class BlankGoal
 public class GoalManager : MonoBehaviour
 {
     public static GoalManager Instance;
-    public BlankGoal[] levelGoals;
+    [SerializeField]
+    BlankGoal[] levelGoals;
     public List<GoalPanel> currentGoals = new List<GoalPanel>();
+    int[] numberOfGoals;
     [SerializeField]
     GameObject goalPrefab;
     [SerializeField]
@@ -24,9 +26,33 @@ public class GoalManager : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
-    {
+    {        
+        GetGoals();
+        LevelGoalsReset();
         SetUpGoals();
         Instance = this;
+    }
+
+    void LevelGoalsReset()
+    {
+        foreach (var numberColected in levelGoals)
+        {
+            numberColected.numberColected = 0;
+        }
+    }
+
+    void GetGoals()
+    {
+        if (BoardManager.instance != null)
+        {
+            if (BoardManager.instance.world != null)
+            {
+                if (BoardManager.instance.world.levels[BoardManager.instance.level] != null)
+                {
+                    levelGoals = BoardManager.instance.world.levels[BoardManager.instance.level].levelGoals;
+                }
+            }
+        }
     }
 
     void SetUpGoals()
@@ -63,7 +89,7 @@ public class GoalManager : MonoBehaviour
         }
         if (goalsCompleted >= levelGoals.Length)
         {
-            print("You win!");
+            GUIManager.instance.WinGameWindow();
         }
     }
 

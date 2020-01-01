@@ -5,7 +5,10 @@ using UnityEngine;
 public enum GameState
 {
     wait,
-    move
+    move,
+    pause,
+    lose,
+    win
 }
 
 public enum TyleKind
@@ -26,12 +29,17 @@ public class TyleType
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager instance;
+    [Header("Scriptable object variables")]
+    public int level;
+    public World world;
 
+    [Header("Layout")]
     public TyleType[] boardLayout;
-
+    public bool isShifring = true;
     [SerializeField]
     GameObject destroyEffect;
 
+    [Header("Score System")]
     [SerializeField]
     public int[] scoreGoals;
     [SerializeField]
@@ -42,8 +50,12 @@ public class BoardManager : MonoBehaviour
 
     public GameState gameState = GameState.move;
 
-    public int xSize, ySize, offset;
+    [Header("Board Demensions")]
+    public int xSize;
+    public int ySize;
+    public int offset;
 
+    [Header("Tile type")]
     [SerializeField]
     GameObject tilePrefab;
     [SerializeField]
@@ -56,10 +68,34 @@ public class BoardManager : MonoBehaviour
     public GameObject[,] allTiles;
     private bool[,] blankSpaces;
 
+    void Awake()
+    {
+        instance = GetComponent<BoardManager>();
+        if (PlayerPrefs.HasKey("Current Level"))
+        {
+            level = PlayerPrefs.GetInt("Current Level");
+        }
+        if (world != null)
+        {
+            if (world.levels[level] != null)
+            {
+                if (LevelSelect.Instance != null)
+                {
+                    xSize = world.levels[level].xSize;
+                    ySize = world.levels[level].ySize;
+                    characters = world.levels[level].characterTiles;
+                    scoreGoals = world.levels[level].scoreGoals;
+                    boardLayout = world.levels[level].boardLayout;
+                }
+            }
+        }
+    }
+
     void Start()
     {
+        gameState = GameState.pause;
         breakbleTiles = new BackgroundTile[xSize, ySize];
-        instance = GetComponent<BoardManager>();
+
         blankSpaces = new bool[xSize, ySize];
         allTiles = new GameObject[xSize, ySize];
         SetUp();
@@ -290,7 +326,7 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
-        yield return new WaitForSeconds(refilDelay * 0.5f);
+        yield return new WaitForSeconds(refilDelay * 2f);
         StartCoroutine(FillBoard());
     }
 
@@ -318,7 +354,7 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    bool MatchesOnBoard()
+    public bool MatchesOnBoard()
     {
         for (int x = 0; x < xSize; x++)
         {
@@ -338,6 +374,7 @@ public class BoardManager : MonoBehaviour
 
     IEnumerator FillBoard()
     {
+        isShifring = true;
         RefillBoard();
         yield return new WaitForSeconds(refilDelay);
 
@@ -346,6 +383,7 @@ public class BoardManager : MonoBehaviour
             streakValue++;
             DestroyMatches();
             yield return new WaitForSeconds(2 * refilDelay);
+
         }
         FindMatch.instance.allMatches.Clear();
         currentTile = null;
@@ -355,11 +393,15 @@ public class BoardManager : MonoBehaviour
             ShuffleBoard();
             yield return new WaitForSeconds(refilDelay * 2);
             DestroyMatches();
+            yield return new WaitForSeconds(refilDelay * 2);
         }
         yield return new WaitForSeconds(refilDelay);
-        gameState = GameState.move;
+        if (gameState != GameState.lose)
+        {
+            gameState = GameState.move;
+        }
         streakValue = 1;
-
+        isShifring = false;
     }
 
     //Deadlock section

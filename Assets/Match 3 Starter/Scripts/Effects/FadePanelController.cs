@@ -14,8 +14,10 @@ public class FadePanelController : MonoBehaviour
     {
         if (panelAnim != null && gameInfoAnim != null)
         {
+            BoardManager.instance.gameState = GameState.move;
             panelAnim.SetBool("Out", true);
             gameInfoAnim.SetBool("Out", true);
+            GUIManager.instance.SetGameType();
         }
     }
 }
