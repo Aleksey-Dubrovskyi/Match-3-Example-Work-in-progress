@@ -4,21 +4,21 @@ using UnityEngine;
 public class HintManager : MonoBehaviour
 {
     [SerializeField]
-    float hintDelay;
-    float hintDelaySeconds;
+    private float hintDelay;
+    private float hintDelaySeconds;
     [SerializeField]
-    GameObject hintParcticle;
+    private GameObject hintParcticle;
     [SerializeField]
-    GameObject currentHint;
+    private GameObject currentHint;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         hintDelaySeconds = hintDelay;
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         hintDelaySeconds -= Time.deltaTime;
         if (hintDelaySeconds <= 0 && currentHint == null)
@@ -28,7 +28,7 @@ public class HintManager : MonoBehaviour
         }
     }
 
-    List<GameObject> FindAllMatches()
+    private List<GameObject> FindAllMatches()
     {
         List<GameObject> possibleMoves = new List<GameObject>();
         for (int x = 0; x < BoardManager.instance.xSize; x++)
@@ -57,7 +57,7 @@ public class HintManager : MonoBehaviour
         return possibleMoves;
     }
 
-    GameObject PickRandomTile()
+    private GameObject PickRandomTile()
     {
         List<GameObject> possibleMoves = new List<GameObject>();
         possibleMoves = FindAllMatches();
@@ -69,7 +69,7 @@ public class HintManager : MonoBehaviour
         return null;
     }
 
-    void MarkHint()
+    private void MarkHint()
     {
         GameObject move = PickRandomTile();
         if (move != null)

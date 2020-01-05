@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -14,26 +13,26 @@ public class GoalManager : MonoBehaviour
 {
     public static GoalManager Instance;
     [SerializeField]
-    BlankGoal[] levelGoals;
+    private BlankGoal[] levelGoals;
     public List<GoalPanel> currentGoals = new List<GoalPanel>();
-    int[] numberOfGoals;
+    private int[] numberOfGoals;
     [SerializeField]
-    GameObject goalPrefab;
+    private GameObject goalPrefab;
     [SerializeField]
-    GameObject goalIntroParent;
+    private GameObject goalIntroParent;
     [SerializeField]
-    GameObject goalGameParent;
+    private GameObject goalGameParent;
 
     // Start is called before the first frame update
-    void Start()
-    {        
+    private void Start()
+    {
         GetGoals();
         LevelGoalsReset();
         SetUpGoals();
         Instance = this;
     }
 
-    void LevelGoalsReset()
+    private void LevelGoalsReset()
     {
         foreach (var numberColected in levelGoals)
         {
@@ -41,7 +40,7 @@ public class GoalManager : MonoBehaviour
         }
     }
 
-    void GetGoals()
+    private void GetGoals()
     {
         if (BoardManager.instance != null)
         {
@@ -55,7 +54,7 @@ public class GoalManager : MonoBehaviour
         }
     }
 
-    void SetUpGoals()
+    private void SetUpGoals()
     {
         for (int i = 0; i < levelGoals.Length; i++)
         {

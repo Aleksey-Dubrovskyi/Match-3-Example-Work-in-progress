@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 212000010479004448}
   - component: {fileID: 61000013103663072}
   - component: {fileID: 1840035582653675330}
+  - component: {fileID: 4604679800488302053}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -124,9 +125,9 @@ MonoBehaviour:
   otherPrefab: {fileID: 0}
   arrowPrefab: {fileID: 4841466821364967405, guid: fdb864a8e3662604182391e6655aecf3,
     type: 3}
-  colorBomb: {fileID: 3742778944205857998, guid: ccd3cb6ec4b8e2247af015417aa1da0b,
+  colorBomb: {fileID: 590756406408563426, guid: a2cee25d85711b54bacd5c8030bd13ca,
     type: 3}
-  adjacentBomb: {fileID: 884485035535583433, guid: 2d4dfc0422975664eb9c8779eeac5470,
+  adjacentBomb: {fileID: 3346546915687759693, guid: 21d0d2b81fd0bab4294d4c76210a5b59,
     type: 3}
   isMatched: 0
   isColorBomb: 0
@@ -136,3 +137,22 @@ MonoBehaviour:
   angleDir: 0
   column: 0
   row: 0
+--- !u!95 &4604679800488302053
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000010131827792}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9d9f90427d2e6404295d7ab34fffe111, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

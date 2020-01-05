@@ -7,7 +7,7 @@ public class FindMatch : MonoBehaviour
     public List<GameObject> allMatches = new List<GameObject>();
     public static FindMatch instance;
 
-    void Start()
+    private void Start()
     {
         instance = GetComponent<FindMatch>();
     }
@@ -17,7 +17,7 @@ public class FindMatch : MonoBehaviour
         StartCoroutine(FindMatchCo());
     }
 
-    List<GameObject> IsAdjacentBomb(Tiles tile1, Tiles tile2, Tiles tile3)
+    private List<GameObject> IsAdjacentBomb(Tiles tile1, Tiles tile2, Tiles tile3)
     {
         List<GameObject> currenTiles = new List<GameObject>();
         if (tile1.isAdjacentBomb)
@@ -35,7 +35,7 @@ public class FindMatch : MonoBehaviour
         return currenTiles;
     }
 
-    void AddToListAndMatch(GameObject tile)
+    private void AddToListAndMatch(GameObject tile)
     {
         if (!allMatches.Contains(tile))
         {
@@ -45,14 +45,14 @@ public class FindMatch : MonoBehaviour
         tile.GetComponent<Tiles>().isMatched = true;
     }
 
-    void GetNearbyTile(GameObject tile1, GameObject tile2, GameObject tile3)
+    private void GetNearbyTile(GameObject tile1, GameObject tile2, GameObject tile3)
     {
         AddToListAndMatch(tile1);
         AddToListAndMatch(tile2);
         AddToListAndMatch(tile3);
     }
 
-    List<GameObject> IsRowBomb(Tiles tile1, Tiles tile2, Tiles tile3)
+    private List<GameObject> IsRowBomb(Tiles tile1, Tiles tile2, Tiles tile3)
     {
         List<GameObject> currenTiles = new List<GameObject>();
         if (tile1.isRowBomb)
@@ -70,7 +70,7 @@ public class FindMatch : MonoBehaviour
         return currenTiles;
     }
 
-    List<GameObject> IsColumnBomb(Tiles tile1, Tiles tile2, Tiles tile3)
+    private List<GameObject> IsColumnBomb(Tiles tile1, Tiles tile2, Tiles tile3)
     {
         List<GameObject> currenTiles = new List<GameObject>();
         if (tile1.isColumnBomb)
@@ -88,9 +88,9 @@ public class FindMatch : MonoBehaviour
         return currenTiles;
     }
 
-    IEnumerator FindMatchCo()
+    private IEnumerator FindMatchCo()
     {
-        yield return new WaitForSeconds(.2f);
+        yield return null;
         for (int x = 0; x < BoardManager.instance.xSize; x++)
         {
             for (int y = 0; y < BoardManager.instance.ySize; y++)
@@ -154,7 +154,7 @@ public class FindMatch : MonoBehaviour
         }
     }
 
-    List<GameObject> GetAdjacentTiles(int column, int row)
+    private List<GameObject> GetAdjacentTiles(int column, int row)
     {
         List<GameObject> tiles = new List<GameObject>();
         for (int x = column - 1; x <= column + 1; x++)
@@ -191,7 +191,7 @@ public class FindMatch : MonoBehaviour
         return tiles;
     }
 
-    List<GameObject> GetColumnTiles(int column)
+    private List<GameObject> GetColumnTiles(int column)
     {
         List<GameObject> tiles = new List<GameObject>();
         for (int y = 0; y < BoardManager.instance.ySize; y++)
@@ -221,7 +221,7 @@ public class FindMatch : MonoBehaviour
         return tiles;
     }
 
-    List<GameObject> GetRowTiles(int row)
+    private List<GameObject> GetRowTiles(int row)
     {
         List<GameObject> tiles = new List<GameObject>();
         for (int x = 0; x < BoardManager.instance.xSize; x++)
@@ -252,11 +252,11 @@ public class FindMatch : MonoBehaviour
         return tiles;
     }
 
-    public void CheckBombs()
+    public void CheckBombs(MatchType matchType)
     {
         if (BoardManager.instance.currentTile != null)
         {
-            if (BoardManager.instance.currentTile.isMatched)
+            if (BoardManager.instance.currentTile.isMatched && BoardManager.instance.currentTile.GetComponent<SpriteRenderer>().sprite == matchType.sprite)
             {
                 BoardManager.instance.currentTile.isMatched = false;
                 if ((BoardManager.instance.currentTile.angleDir > -45 && BoardManager.instance.currentTile.angleDir <= 45)
@@ -274,7 +274,7 @@ public class FindMatch : MonoBehaviour
         else if (BoardManager.instance.currentTile.otherPrefab != null)
         {
             Tiles otherTile = BoardManager.instance.currentTile.otherPrefab.GetComponent<Tiles>();
-            if (otherTile.isMatched)
+            if (otherTile.isMatched && otherTile.GetComponent<SpriteRenderer>().sprite == matchType.sprite)
             {
                 otherTile.isMatched = false;
 

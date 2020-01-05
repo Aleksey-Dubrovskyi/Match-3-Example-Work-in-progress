@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 
@@ -23,7 +23,7 @@ public class GUIManager : MonoBehaviour
     public Requiarament requiarament;
     public GameObject gameOverPanel;
     [SerializeField]
-    GameObject winGameWindow;
+    private GameObject winGameWindow;
     public GameObject bottomUI;
     public Text yourScoreTxt;
     public Text highScoreTxt;
@@ -36,14 +36,14 @@ public class GUIManager : MonoBehaviour
     //[SerializeField]
     //private int moveCounter;
     [SerializeField]
-    Image scoreBar;
+    private Image scoreBar;
 
-    void Awake()
+    private void Awake()
     {
         instance = GetComponent<GUIManager>();
     }
 
-    void Start()
+    private void Start()
     {
         SetGameType();
         moveCounterTxt.text = requiarament.ammount.ToString();
@@ -89,7 +89,7 @@ public class GUIManager : MonoBehaviour
             if (scoreBar != null)
             {
                 int lenght = BoardManager.instance.scoreGoals.Length;
-                scoreBar.fillAmount = (float)score / (float)BoardManager.instance.scoreGoals[lenght - 1];
+                scoreBar.fillAmount = score / (float)BoardManager.instance.scoreGoals[lenght - 1];
             }
             if (GameData.Instance != null)
             {
@@ -100,11 +100,11 @@ public class GUIManager : MonoBehaviour
                 }
                 GameData.Instance.Save();
             }
-            scoreTxt.text = score.ToString();
+            scoreTxt.text = "Score: " + score.ToString();
         }
     }
 
-    IEnumerator TimeCounter()
+    private IEnumerator TimeCounter()
     {
         while (ammountOFMoves > 0)
         {
@@ -145,7 +145,7 @@ public class GUIManager : MonoBehaviour
         set
         {
             ammountOFMoves = value;
-            if (ammountOFMoves <= 0)
+            if (ammountOFMoves <= 0 && BoardManager.instance.gameState != GameState.win)
             {
                 StartCoroutine(WaitForShifting());
                 ammountOFMoves = 0;
@@ -178,9 +178,20 @@ public class GUIManager : MonoBehaviour
     {
         BoardManager.instance.gameState = GameState.win;
         winGameWindow.SetActive(true);
+
+        yourScoreTxt.text = score.ToString();
+        if (score > PlayerPrefs.GetInt("HighScore"))
+        {
+            PlayerPrefs.SetInt("HighScore", score);
+            highScoreTxt.text = "New Best: " + PlayerPrefs.GetInt("HighScore").ToString();
+        }
+        else
+        {
+            highScoreTxt.text = /*"Best: " + */ PlayerPrefs.GetInt("HighScore").ToString();
+        }
     }
 
-    IEnumerator WaitForShifting()
+    private IEnumerator WaitForShifting()
     {
         yield return new WaitUntil(() => BoardManager.instance.isShifring == false);
         yield return new WaitForSeconds(.5f);

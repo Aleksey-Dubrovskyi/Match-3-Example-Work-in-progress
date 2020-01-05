@@ -1,33 +1,31 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class LevelSelect : MonoBehaviour
 {
     public static LevelSelect Instance;
     [SerializeField]
-    Image[] stars;
-    int starsActive;
+    private Image[] stars;
+    private int starsActive;
     public bool isLocked;
     [SerializeField]
-    Text buttonText;
+    private Text buttonText;
 
     public int levelNumber;
-    Image buttonBackground;
+    private Image buttonBackground;
     [SerializeField]
-    Sprite buttonLockedBackground;
+    private Sprite buttonLockedBackground;
     [SerializeField]
-    GameObject levelConfigureWindow;
-    Button thisButton;
+    private GameObject levelConfigureWindow;
+    private Button thisButton;
 
     // Start is called before the first frame update
-    void Awake()
+    private void Awake()
     {
         Instance = GetComponent<LevelSelect>();
     }
 
-    void Start()
+    private void Start()
     {
         buttonText.text = levelNumber.ToString();
         thisButton = GetComponent<Button>();
@@ -37,7 +35,7 @@ public class LevelSelect : MonoBehaviour
         ResetStars();
     }
 
-    void LoadData()
+    private void LoadData()
     {
         if (GameData.Instance != null)
         {
@@ -53,7 +51,7 @@ public class LevelSelect : MonoBehaviour
         }
     }
 
-    void ResetStars()
+    private void ResetStars()
     {
         for (int i = 0; i < starsActive; i++)
         {
@@ -61,7 +59,7 @@ public class LevelSelect : MonoBehaviour
         }
     }
 
-    void ButtonBacgroundSet()
+    private void ButtonBacgroundSet()
     {
         if (isLocked)
         {

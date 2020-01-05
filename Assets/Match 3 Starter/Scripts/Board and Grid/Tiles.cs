@@ -3,16 +3,16 @@ using UnityEngine;
 
 public class Tiles : MonoBehaviour
 {
-    HintManager hintManager;
+    private HintManager hintManager;
 
     public GameObject otherPrefab;
     public GameObject arrowPrefab;
     public GameObject colorBomb;
     public GameObject adjacentBomb;
-
-    Vector2 firstTouchPosition;
-    Vector2 secondTouchPosition;
-    Vector2 tempPos;
+    private Vector2 firstTouchPosition = Vector2.zero;
+    private Vector2 secondTouchPosition = Vector2.zero;
+    private Vector2 tempPos;
+    private Animator anim;
 
     public bool isMatched;
     public bool isColorBomb;
@@ -21,13 +21,13 @@ public class Tiles : MonoBehaviour
     public bool isColumnBomb;
 
     public float angleDir = 0f;
-    float swipeResit = 1f;
+    private float swipeResit = 1f;
 
     public int column, row;
-    int previousRow, previousColumn;
-    int startX, startY;
+    private int previousRow, previousColumn;
+    private int startX, startY;
 
-    void Start()
+    private void Start()
     {
         hintManager = FindObjectOfType<HintManager>();
         isMatched = false;
@@ -35,9 +35,10 @@ public class Tiles : MonoBehaviour
         isAdjacentBomb = false;
         isRowBomb = false;
         isColumnBomb = false;
+        anim = GetComponent<Animator>();
     }
 
-    void Update()
+    private void Update()
     {
         startX = column;
         startY = row;
@@ -49,48 +50,63 @@ public class Tiles : MonoBehaviour
             if (BoardManager.instance.allTiles[column, row] != this.gameObject)
             {
                 BoardManager.instance.allTiles[column, row] = this.gameObject;
+                FindMatch.instance.FindAllmatches();
             }
-            FindMatch.instance.FindAllmatches();
+
         }
         else
         {
             tempPos = new Vector2(startX, transform.position.y);
             transform.position = tempPos;
-            if (BoardManager.instance.allTiles[column, row] != this.gameObject)
-            {
-                BoardManager.instance.allTiles[column, row] = this.gameObject;
-            }
-            BoardManager.instance.allTiles[column, row] = this.gameObject;
         }
         if (Mathf.Abs(startY - transform.position.y) > 0.1f)
         {
             //Move towards
             tempPos = new Vector2(transform.position.x, startY);
             transform.position = Vector2.Lerp(transform.position, tempPos, 0.6f);
-            FindMatch.instance.FindAllmatches();
+            if (BoardManager.instance.allTiles[column, row] != this.gameObject)
+            {
+                BoardManager.instance.allTiles[column, row] = this.gameObject;
+                FindMatch.instance.FindAllmatches();
+            }
         }
         else
         {
             tempPos = new Vector2(transform.position.x, startY);
             transform.position = tempPos;
-            BoardManager.instance.allTiles[column, row] = this.gameObject;
         }
     }
 
-    void OnMouseDown()
+    //void OnMouseOver()
+    //{
+    //    if (mousePressed == false)
+    //    {
+    //        anim.SetBool("isWaiting", true);
+    //    }
+    //}
+
+    //void OnMouseExit()
+    //{
+    //    anim.SetBool("isWaiting", false);
+    //}
+
+    private void OnMouseDown()
     {
+        anim.SetBool("isWaiting", true);
         if (hintManager != null)
         {
             hintManager.DestroyHint();
         }
+
         if (BoardManager.instance.gameState == GameState.move)
         {
             firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
     }
 
-    void OnMouseUp()
+    private void OnMouseUp()
     {
+        anim.SetBool("isWaiting", false);
         if (BoardManager.instance.gameState == GameState.move)
         {
             secondTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -98,17 +114,14 @@ public class Tiles : MonoBehaviour
         }
     }
 
-    void CalculateAngle()
+    private void CalculateAngle()
     {
         if (Mathf.Abs(secondTouchPosition.y - firstTouchPosition.y) > swipeResit || Mathf.Abs(secondTouchPosition.x - firstTouchPosition.x) > swipeResit)
         {
+            BoardManager.instance.gameState = GameState.wait;
             angleDir = Mathf.Atan2(secondTouchPosition.y - firstTouchPosition.y, secondTouchPosition.x - firstTouchPosition.x) * 180 / Mathf.PI;
             MovePosition();
             BoardManager.instance.currentTile = this;
-            if (otherPrefab != null)
-            {
-                BoardManager.instance.gameState = GameState.wait;
-            }
         }
         else
         {
@@ -120,24 +133,34 @@ public class Tiles : MonoBehaviour
 
     }
 
-    void CalculationOfPosition(Vector2 direction)
+    private void CalculationOfPosition(Vector2 direction)
     {
         otherPrefab = BoardManager.instance.allTiles[column + (int)direction.x, row + (int)direction.y];
         previousRow = row;
         previousColumn = column;
-        if (otherPrefab != null)
+        if (BoardManager.instance.lockTiles[column, row] == null && BoardManager.instance.lockTiles[column + (int)direction.x, row + (int)direction.y] == null)
         {
-            otherPrefab.GetComponent<Tiles>().column += -1 * (int)direction.x;
-            otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
-            column += (int)direction.x;
-            row += (int)direction.y;
-            if (GUIManager.instance.requiarament.gameType == GameType.Moves)
+            if (otherPrefab != null)
             {
-                GUIManager.instance.MoveCounter--;
-            }
+                otherPrefab.GetComponent<Tiles>().column += -1 * (int)direction.x;
+                otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
+                column += (int)direction.x;
+                row += (int)direction.y;
+                if (GUIManager.instance.requiarament.gameType == GameType.Moves)
+                {
+                    GUIManager.instance.MoveCounter--;
+                }
 
-            SFXManager.instance.PlaySFX(Clip.Swap);
-            StartCoroutine(PrefabCo());
+                SFXManager.instance.PlaySFX(Clip.Swap);
+                StartCoroutine(PrefabCo());
+            }
+            else
+            {
+                if (BoardManager.instance.gameState != GameState.lose)
+                {
+                    BoardManager.instance.gameState = GameState.move;
+                }
+            }
         }
         else
         {
@@ -148,7 +171,7 @@ public class Tiles : MonoBehaviour
         }
     }
 
-    void MovePosition()
+    private void MovePosition()
     {
         if (angleDir > -45 && angleDir <= 45 && column < BoardManager.instance.xSize - 1)
         {
@@ -170,13 +193,16 @@ public class Tiles : MonoBehaviour
             //Down Swipe
             CalculationOfPosition(Vector2.down);
         }
-        if (BoardManager.instance.gameState != GameState.lose)
+        else
         {
-            BoardManager.instance.gameState = GameState.move;
+            if (BoardManager.instance.gameState != GameState.lose)
+            {
+                BoardManager.instance.gameState = GameState.move;
+            }
         }
     }
 
-    IEnumerator PrefabCo()
+    private IEnumerator PrefabCo()
     {
         if (isColorBomb)
         {
@@ -198,7 +224,7 @@ public class Tiles : MonoBehaviour
                 row = previousRow;
                 column = previousColumn;
                 SFXManager.instance.PlaySFX(Clip.Swap);
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.5f);
                 BoardManager.instance.currentTile = null;
                 BoardManager.instance.gameState = GameState.move;
             }
@@ -209,64 +235,78 @@ public class Tiles : MonoBehaviour
         }
     }
 
-    void FindMatches()
-    {
-        if (column > 0 && column < BoardManager.instance.xSize - 1)
-        {
-            GameObject leftPrefab = BoardManager.instance.allTiles[column - 1, row];
-            GameObject rightPrefab = BoardManager.instance.allTiles[column + 1, row];
-            if (leftPrefab != null & rightPrefab != null)
-            {
-                if (leftPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite && rightPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite)
-                {
-                    leftPrefab.GetComponent<Tiles>().isMatched = true;
-                    rightPrefab.GetComponent<Tiles>().isMatched = true;
-                    isMatched = true;
-                }
-            }
-        }
-        if (row > 0 && row < BoardManager.instance.ySize - 1)
-        {
-            GameObject upPrefab = BoardManager.instance.allTiles[column, row + 1];
-            GameObject downPrefab = BoardManager.instance.allTiles[column, row - 1];
-            if (upPrefab != null && downPrefab != null)
-            {
-                if (upPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite && downPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite)
-                {
-                    upPrefab.GetComponent<Tiles>().isMatched = true;
-                    downPrefab.GetComponent<Tiles>().isMatched = true;
-                    isMatched = true;
-                }
-            }
-        }
-    }
+    //private void FindMatches()
+    //{
+    //    if (column > 0 && column < BoardManager.instance.xSize - 1)
+    //    {
+    //        GameObject leftPrefab = BoardManager.instance.allTiles[column - 1, row];
+    //        GameObject rightPrefab = BoardManager.instance.allTiles[column + 1, row];
+    //        if (leftPrefab != null & rightPrefab != null)
+    //        {
+    //            if (leftPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite && rightPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite)
+    //            {
+    //                leftPrefab.GetComponent<Tiles>().isMatched = true;
+    //                rightPrefab.GetComponent<Tiles>().isMatched = true;
+    //                isMatched = true;
+    //            }
+    //        }
+    //    }
+    //    if (row > 0 && row < BoardManager.instance.ySize - 1)
+    //    {
+    //        GameObject upPrefab = BoardManager.instance.allTiles[column, row + 1];
+    //        GameObject downPrefab = BoardManager.instance.allTiles[column, row - 1];
+    //        if (upPrefab != null && downPrefab != null)
+    //        {
+    //            if (upPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite && downPrefab.GetComponent<SpriteRenderer>().sprite == this.gameObject.GetComponent<SpriteRenderer>().sprite)
+    //            {
+    //                upPrefab.GetComponent<Tiles>().isMatched = true;
+    //                downPrefab.GetComponent<Tiles>().isMatched = true;
+    //                isMatched = true;
+    //            }
+    //        }
+    //    }
+    //}
+
     public void MakeRowBomb()
     {
-        isRowBomb = true;
-        //this.gameObject.GetComponent<SpriteRenderer>().sprite = null;
-        GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
-        arrow.transform.parent = this.transform;
+        if (!isColumnBomb && !isColorBomb && !isAdjacentBomb)
+        {
+            isRowBomb = true;
+            //this.gameObject.GetComponent<SpriteRenderer>().sprite = null;
+            GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
+            arrow.transform.parent = this.transform;
+        }
     }
 
     public void MakeColumnBomb()
     {
-        isColumnBomb = true;
-        //this.gameObject.GetComponent<SpriteRenderer>().sprite = null;
-        GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.Euler(0, 0, 90));
-        arrow.transform.parent = this.transform;
+        if (!isRowBomb && !isColorBomb && !isAdjacentBomb)
+        {
+            isColumnBomb = true;
+            //this.gameObject.GetComponent<SpriteRenderer>().sprite = null;
+            GameObject arrow = Instantiate(arrowPrefab, transform.position, Quaternion.Euler(0, 0, 90));
+            arrow.transform.parent = this.transform;
+        }
+
     }
 
     public void MakeColorBomb()
     {
-        isColorBomb = true;
-        GameObject color = Instantiate(colorBomb, transform.position, Quaternion.identity);
-        color.transform.parent = this.transform;
+        if (!isRowBomb && !isColumnBomb && !isAdjacentBomb)
+        {
+            isColorBomb = true;
+            GameObject color = Instantiate(colorBomb, transform.position, Quaternion.identity);
+            color.transform.parent = this.transform;
+        }
     }
 
     public void MakeAdjacentBomb()
     {
-        isAdjacentBomb = true;
-        GameObject adjacent = Instantiate(adjacentBomb, transform.position, Quaternion.identity);
-        adjacent.transform.parent = this.transform;
+        if (!isRowBomb && !isColumnBomb && !isColorBomb)
+        {
+            isAdjacentBomb = true;
+            GameObject adjacent = Instantiate(adjacentBomb, transform.position, Quaternion.identity);
+            adjacent.transform.parent = this.transform;
+        }
     }
 }

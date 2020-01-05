@@ -2,17 +2,18 @@
 
 public class CameraScale : MonoBehaviour
 {
-    BoardManager board;
+    private BoardManager board;
     [SerializeField]
-    float cameraOffset;
+    private float cameraOffset;
     [SerializeField]
-    float aspectRatio;
+    private float aspectRatio;
     [SerializeField]
-    float padding;
+    private float padding;
     [SerializeField]
-    float yOffset = 1;
+    private float yOffset = 1;
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         board = FindObjectOfType<BoardManager>();
         if (board != null)
@@ -22,7 +23,7 @@ public class CameraScale : MonoBehaviour
 
     }
 
-    void RepositionCamera(float x, float y)
+    private void RepositionCamera(float x, float y)
     {
         Vector3 tempPosition = new Vector3(x / 2, y / 2 + yOffset, cameraOffset);
         transform.position = tempPosition;

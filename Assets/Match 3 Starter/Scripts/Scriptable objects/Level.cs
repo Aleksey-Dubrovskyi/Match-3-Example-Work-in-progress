@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Level", menuName = "Level")]
 public class Level : ScriptableObject
 {
     [Header("Board Demensions")]
-    public int xSize; 
+    public int xSize;
     public int ySize;
 
     [Header("Tiles Layout")]

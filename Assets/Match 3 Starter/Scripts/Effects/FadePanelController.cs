@@ -1,14 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FadePanelController : MonoBehaviour
 {
 
     [SerializeField]
-    Animator panelAnim;
+    private Animator panelAnim;
     [SerializeField]
-    Animator gameInfoAnim;
+    private Animator gameInfoAnim;
 
     public void Ok()
     {

@@ -3,14 +3,14 @@
 public class BackgroundTile : MonoBehaviour
 {
     public int hitPoints;
-    SpriteRenderer sprite;
+    private SpriteRenderer sprite;
 
-    void Start()
+    private void Start()
     {
         sprite = GetComponent<SpriteRenderer>();
     }
 
-    void Update()
+    private void Update()
     {
         if (hitPoints <= 0)
         {
@@ -29,7 +29,7 @@ public class BackgroundTile : MonoBehaviour
         ChangeOpacity();
     }
 
-    void ChangeOpacity()
+    private void ChangeOpacity()
     {
         Color color = sprite.color;
         float newAlpa = color.a * 0.5f;

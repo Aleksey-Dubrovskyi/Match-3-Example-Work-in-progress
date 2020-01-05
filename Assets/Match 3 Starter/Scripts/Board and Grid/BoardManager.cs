@@ -15,8 +15,19 @@ public enum TyleKind
 {
     Breakable,
     Blank,
-    Normal
+    Normal,
+    Locktile,
+    Concrete,
+    Slime
 }
+
+[System.Serializable]
+public class MatchType
+{
+    public int type;
+    public Sprite sprite;
+}
+
 
 [System.Serializable]
 public class TyleType
@@ -37,16 +48,16 @@ public class BoardManager : MonoBehaviour
     public TyleType[] boardLayout;
     public bool isShifring = true;
     [SerializeField]
-    GameObject destroyEffect;
+    private GameObject destroyEffect;
 
     [Header("Score System")]
     [SerializeField]
     public int[] scoreGoals;
     [SerializeField]
-    float refilDelay = 0.5f;
+    private float refilDelay = 0.5f;
     [SerializeField]
-    int scoreForOneTile;
-    int streakValue = 1;
+    private int scoreForOneTile;
+    private int streakValue = 1;
 
     public GameState gameState = GameState.move;
 
@@ -57,18 +68,25 @@ public class BoardManager : MonoBehaviour
 
     [Header("Tile type")]
     [SerializeField]
-    GameObject tilePrefab;
+    private GameObject tilePrefab;
     [SerializeField]
-    GameObject breakcableTile;
+    private GameObject breakcableTile;
     [SerializeField]
-    List<Sprite> characters = new List<Sprite>();
+    private GameObject lockTilePrefab;
+    [SerializeField]
+    private GameObject iceTilePrefab;
+    [SerializeField]
+    private List<Sprite> characters = new List<Sprite>();
 
     public Tiles currentTile;
-    BackgroundTile[,] breakbleTiles;
+    private BackgroundTile[,] breakbleTiles;
     public GameObject[,] allTiles;
+    public BackgroundTile[,] lockTiles;
+    private BackgroundTile[,] iceblockTiles;
     private bool[,] blankSpaces;
+    public MatchType matchType;
 
-    void Awake()
+    private void Awake()
     {
         instance = GetComponent<BoardManager>();
         if (PlayerPrefs.HasKey("Current Level"))
@@ -77,9 +95,9 @@ public class BoardManager : MonoBehaviour
         }
         if (world != null)
         {
-            if (world.levels[level] != null)
+            if (level < world.levels.Length)
             {
-                if (LevelSelect.Instance != null)
+                if (world.levels[level] != null)
                 {
                     xSize = world.levels[level].xSize;
                     ySize = world.levels[level].ySize;
@@ -91,11 +109,12 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    void Start()
+    private void Start()
     {
         gameState = GameState.pause;
         breakbleTiles = new BackgroundTile[xSize, ySize];
-
+        lockTiles = new BackgroundTile[xSize, ySize];
+        iceblockTiles = new BackgroundTile[xSize, ySize];
         blankSpaces = new bool[xSize, ySize];
         allTiles = new GameObject[xSize, ySize];
         SetUp();
@@ -125,17 +144,45 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    void SetUp()
+    private void GenerateLockTiles()
+    {
+        for (int i = 0; i < boardLayout.Length; i++)
+        {
+            if (boardLayout[i].tileKind == TyleKind.Locktile)
+            {
+                Vector2 tempPosition = new Vector2(boardLayout[i].x, boardLayout[i].y);
+                GameObject tile = Instantiate(lockTilePrefab, tempPosition, Quaternion.identity);
+                lockTiles[boardLayout[i].x, boardLayout[i].y] = tile.GetComponent<BackgroundTile>();
+            }
+        }
+    }
+
+    private void GenerateIceblockTiles()
+    {
+        for (int i = 0; i < boardLayout.Length; i++)
+        {
+            if (boardLayout[i].tileKind == TyleKind.Concrete)
+            {
+                Vector2 tempPosition = new Vector2(boardLayout[i].x, boardLayout[i].y);
+                GameObject tile = Instantiate(iceTilePrefab, tempPosition, Quaternion.identity);
+                iceblockTiles[boardLayout[i].x, boardLayout[i].y] = tile.GetComponent<BackgroundTile>();
+            }
+        }
+    }
+
+    private void SetUp()
     {
         Sprite[] previousLeft = new Sprite[ySize];
         Sprite previousBelow = null;
         GenerateBlankSpaces();
         GenerateBreakbleTiles();
+        GenerateLockTiles();
+        GenerateIceblockTiles();
         for (int x = 0; x < xSize; x++)
         {
             for (int y = 0; y < ySize; y++)
             {
-                if (!blankSpaces[x, y])
+                if (!blankSpaces[x, y] && !iceblockTiles[x, y])
                 {
                     Vector2 tempPos = new Vector2(x, y + offset);
                     GameObject backgroundTile = Instantiate(tilePrefab, tempPos, Quaternion.identity);
@@ -159,7 +206,7 @@ public class BoardManager : MonoBehaviour
         StartCoroutine(SetUpDeadLock());
     }
 
-    IEnumerator SetUpDeadLock()
+    private IEnumerator SetUpDeadLock()
     {
         yield return new WaitForSeconds(refilDelay);
         if (IsDeadlocked())
@@ -168,106 +215,136 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    bool ColumnOrRow()
+    private MatchType ColumnOrRow()
     {
-        int numberHorizontal = 0, numberVertical = 0;
-        Tiles firstTile = FindMatch.instance.allMatches[0].GetComponent<Tiles>();
-        if (firstTile != null)
+        List<GameObject> matchCopy = FindMatch.instance.allMatches as List<GameObject>;
+
+        matchType.type = 0;
+        matchType.sprite = null;
+
+        for (int i = 0; i < matchCopy.Count; i++)
         {
-            foreach (var currentTile in FindMatch.instance.allMatches)
+            Tiles thisTile = matchCopy[i].GetComponent<Tiles>();
+            Sprite sprite = matchCopy[i].GetComponent<SpriteRenderer>().sprite;
+            int column = thisTile.column;
+            int row = thisTile.row;
+            int columnMatch = 0;
+            int rowMatch = 0;
+
+            for (int j = 0; j < matchCopy.Count; j++)
             {
-                Tiles tile = currentTile.GetComponent<Tiles>();
-                if (tile.row == firstTile.row)
+                Tiles nextTile = matchCopy[j].GetComponent<Tiles>();
+
+                if (nextTile == thisTile)
                 {
-                    numberHorizontal++;
+                    continue;
                 }
-                if (tile.column == firstTile.column)
+
+                Sprite thisTileSprite = thisTile.GetComponent<SpriteRenderer>().sprite;
+                Sprite nextTileSprite = nextTile.GetComponent<SpriteRenderer>().sprite;
+
+                if (nextTile.column == thisTile.column && nextTileSprite == sprite)
                 {
-                    numberVertical++;
+                    columnMatch++;
+                }
+
+                if (nextTile.row == thisTile.row && nextTileSprite == sprite)
+                {
+                    rowMatch++;
                 }
             }
+
+            // 1 == Color Bomb
+            // 2 == Adjacent Bomb
+            // 3 = Column or row Bomb
+
+            if (columnMatch == 4 || rowMatch == 4)
+            {
+                matchType.type = 1;
+                matchType.sprite = sprite;
+                return matchType;
+            }
+            else if (columnMatch == 2 && rowMatch == 2)
+            {
+                matchType.type = 2;
+                matchType.sprite = sprite;
+                return matchType;
+            }
+            else if (columnMatch == 3 || rowMatch == 3)
+            {
+                matchType.type = 3;
+                matchType.sprite = sprite;
+                return matchType;
+            }
+
+
         }
-        return (numberVertical == 5 || numberHorizontal == 5);
+        matchType.type = 0;
+        matchType.sprite = null;
+        return matchType;
     }
 
-    void CheckToMakeBombs()
+    private void CheckToMakeBombs()
     {
-        if (FindMatch.instance.allMatches.Count == 4 || FindMatch.instance.allMatches.Count == 7)
+        if (FindMatch.instance.allMatches.Count > 3)
         {
-            FindMatch.instance.CheckBombs();
-        }
-        if (FindMatch.instance.allMatches.Count == 5 || FindMatch.instance.allMatches.Count == 8)
-        {
-            if (ColumnOrRow())
+            MatchType typeOfMatch = ColumnOrRow();
+            switch (typeOfMatch.type)
             {
-                if (currentTile != null)
-                {
-                    if (currentTile.isMatched)
+                case 1:
+                    //Column or Row Bomb
+                    if (currentTile != null && currentTile.isMatched && currentTile.GetComponent<SpriteRenderer>().sprite == typeOfMatch.sprite)
                     {
-                        if (!currentTile.isColorBomb)
-                        {
-                            currentTile.isMatched = false;
-                            currentTile.MakeColorBomb();
-                        }
+                        currentTile.isMatched = false;
+                        currentTile.MakeColorBomb();
                     }
                     else
                     {
                         if (currentTile.otherPrefab != null)
                         {
                             Tiles otherTile = currentTile.otherPrefab.GetComponent<Tiles>();
-                            if (otherTile.isMatched)
+                            if (otherTile.isMatched && otherTile.GetComponent<SpriteRenderer>().sprite == typeOfMatch.sprite)
                             {
-                                if (!otherTile.isColorBomb)
-                                {
-                                    otherTile.isMatched = false;
-                                    otherTile.MakeColorBomb();
-                                }
+                                otherTile.isMatched = false;
+                                otherTile.MakeColorBomb();
                             }
                         }
                     }
-                }
-            }
-            else
-            {
-                if (currentTile != null)
-                {
-                    if (currentTile.isMatched)
+
+                    break;
+
+                case 2:
+                    //Adjacent Bomb
+                    if (currentTile != null && currentTile.isMatched && currentTile.GetComponent<SpriteRenderer>().sprite == typeOfMatch.sprite)
                     {
-                        if (!currentTile.isAdjacentBomb)
+                        currentTile.isMatched = false;
+                        currentTile.MakeAdjacentBomb();
+                    }
+
+                    else if (currentTile.otherPrefab != null)
+                    {
+                        Tiles otherTile = currentTile.otherPrefab.GetComponent<Tiles>();
+                        if (otherTile.isMatched && currentTile.GetComponent<SpriteRenderer>().sprite == typeOfMatch.sprite)
                         {
-                            currentTile.isMatched = false;
-                            currentTile.MakeAdjacentBomb();
+                            otherTile.isMatched = false;
+                            otherTile.MakeAdjacentBomb();
                         }
                     }
-                    else
-                    {
-                        if (currentTile.otherPrefab != null)
-                        {
-                            Tiles otherTile = currentTile.otherPrefab.GetComponent<Tiles>();
-                            if (otherTile.isMatched)
-                            {
-                                if (!otherTile.isAdjacentBomb)
-                                {
-                                    otherTile.isMatched = false;
-                                    otherTile.MakeAdjacentBomb();
-                                }
-                            }
-                        }
-                    }
-                }
+
+                    break;
+                case 3:
+                    //Color Bomb
+                    FindMatch.instance.CheckBombs(matchType);
+                    break;
             }
         }
     }
 
-    void DestroyMatchesAt(int column, int row)
+    private void DestroyMatchesAt(int column, int row)
     {
         if (allTiles[column, row].GetComponent<Tiles>().isMatched)
         {
-            if (FindMatch.instance.allMatches.Count >= 4)
-            {
-                CheckToMakeBombs();
-            }
-            if (breakbleTiles[column, row])
+            if (breakbleTiles[column, row] != null)
             {
                 //There is a damage to brakable tile. Caution its a magic number
                 breakbleTiles[column, row].TakeDamage(1);
@@ -276,6 +353,18 @@ public class BoardManager : MonoBehaviour
                     breakbleTiles[column, row] = null;
                 }
             }
+            if (lockTiles[column, row] != null)
+            {
+                //There is a damage to brakable tile. Caution its a magic number
+                lockTiles[column, row].TakeDamage(1);
+                if (lockTiles[column, row].hitPoints <= 0)
+                {
+                    lockTiles[column, row] = null;
+                }
+            }
+
+            DamageIceblock(column, row);
+
             if (GoalManager.Instance != null)
             {
                 GoalManager.Instance.CompareGoal(allTiles[column, row].GetComponent<SpriteRenderer>().sprite);
@@ -290,8 +379,61 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    private void DamageIceblock(int column, int row)
+    {
+        if (column > 0)
+        {
+            if (iceblockTiles[column - 1, row])
+            {
+                iceblockTiles[column - 1, row].TakeDamage(1);
+                if (iceblockTiles[column - 1, row].hitPoints <= 0)
+                {
+                    iceblockTiles[column - 1, row] = null;
+                }
+            }
+        }
+        if (column < xSize - 1)
+        {
+            if (iceblockTiles[column + 1, row])
+            {
+                iceblockTiles[column + 1, row].TakeDamage(1);
+                if (iceblockTiles[column + 1, row].hitPoints <= 0)
+                {
+                    iceblockTiles[column + 1, row] = null;
+                }
+            }
+        }
+        if (row > 0)
+        {
+            if (iceblockTiles[column, row - 1])
+            {
+                iceblockTiles[column, row - 1].TakeDamage(1);
+                if (iceblockTiles[column, row - 1].hitPoints <= 0)
+                {
+                    iceblockTiles[column, row - 1] = null;
+                }
+            }
+        }
+        if (row < ySize - 1)
+        {
+            if (iceblockTiles[column, row + 1])
+            {
+                iceblockTiles[column, row + 1].TakeDamage(1);
+                if (iceblockTiles[column, row + 1].hitPoints <= 0)
+                {
+                    iceblockTiles[column, row + 1] = null;
+                }
+            }
+        }
+    }
+
     public void DestroyMatches()
     {
+        if (FindMatch.instance.allMatches.Count >= 4)
+        {
+            CheckToMakeBombs();
+        }
+        FindMatch.instance.allMatches.Clear();
         for (int x = 0; x < xSize; x++)
         {
             for (int y = 0; y < ySize; y++)
@@ -302,11 +444,10 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
-        FindMatch.instance.allMatches.Clear();
         StartCoroutine(DecreaseRowCo());
     }
 
-    IEnumerator DecreaseRowCo()
+    private IEnumerator DecreaseRowCo()
     {
         for (int x = 0; x < xSize; x++)
         {
@@ -330,7 +471,7 @@ public class BoardManager : MonoBehaviour
         StartCoroutine(FillBoard());
     }
 
-    void RefillBoard()
+    private void RefillBoard()
     {
         for (int x = 0; x < xSize; x++)
         {
@@ -356,6 +497,7 @@ public class BoardManager : MonoBehaviour
 
     public bool MatchesOnBoard()
     {
+        FindMatch.instance.FindAllmatches();
         for (int x = 0; x < xSize; x++)
         {
             for (int y = 0; y < ySize; y++)
@@ -372,7 +514,7 @@ public class BoardManager : MonoBehaviour
         return false;
     }
 
-    IEnumerator FillBoard()
+    private IEnumerator FillBoard()
     {
         isShifring = true;
         RefillBoard();
@@ -382,12 +524,11 @@ public class BoardManager : MonoBehaviour
         {
             streakValue++;
             DestroyMatches();
-            yield return new WaitForSeconds(2 * refilDelay);
-
+            yield break;
         }
-        FindMatch.instance.allMatches.Clear();
+
         currentTile = null;
-        
+
         if (IsDeadlocked())
         {
             ShuffleBoard();
@@ -405,7 +546,7 @@ public class BoardManager : MonoBehaviour
     }
 
     //Deadlock section
-    void SwitchPieces(int column, int row, Vector2 direction)
+    private void SwitchPieces(int column, int row, Vector2 direction)
     {
         GameObject holder = allTiles[column + (int)direction.x, row + (int)direction.y] as GameObject;
 
@@ -413,7 +554,7 @@ public class BoardManager : MonoBehaviour
         allTiles[column, row] = holder;
     }
 
-    bool CheckForMathces()
+    private bool CheckForMathces()
     {
         for (int x = 0; x < xSize; x++)
         {
@@ -465,7 +606,7 @@ public class BoardManager : MonoBehaviour
         return false;
     }
 
-    bool IsDeadlocked()
+    private bool IsDeadlocked()
     {
         for (int x = 0; x < xSize; x++)
         {
@@ -499,7 +640,7 @@ public class BoardManager : MonoBehaviour
         return true;
     }
 
-    void ShuffleBoard()
+    private void ShuffleBoard()
     {
         List<GameObject> newBoard = new List<GameObject>();
         for (int x = 0; x < xSize; x++)

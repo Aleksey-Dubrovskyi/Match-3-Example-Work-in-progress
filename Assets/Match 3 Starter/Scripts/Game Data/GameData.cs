@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine;
 
 [Serializable]
 public class SaveData
@@ -20,7 +18,7 @@ public class GameData : MonoBehaviour
     public SaveData saveData;
 
     // Start is called before the first frame update
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
         {
@@ -33,8 +31,8 @@ public class GameData : MonoBehaviour
         }
         Load();
     }
-    
-    void Start()
+
+    private void Start()
     {
 
     }
@@ -49,7 +47,12 @@ public class GameData : MonoBehaviour
         file.Close();
     }
 
-    void OnDisable()
+    private void OnApplicationQuit()
+    {
+        Save();
+    }
+
+    private void OnDisable()
     {
         Save();
     }
@@ -62,6 +65,14 @@ public class GameData : MonoBehaviour
             FileStream file = File.Open(Application.persistentDataPath + "/playerData", FileMode.Open);
             saveData = formatter.Deserialize(file) as SaveData;
             file.Close();
+        }
+        else
+        {
+            saveData = new SaveData();
+            saveData.isActive = new bool[100];
+            saveData.stars = new int[100];
+            saveData.highScores = new int[100];
+            saveData.isActive[0] = true;
         }
     }
 }

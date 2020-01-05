@@ -1,31 +1,30 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LevelConfigures : MonoBehaviour
 {
     [SerializeField]
-    Image[] stars;
-    int starsActive;
+    private Image[] stars;
+    private int starsActive;
     [SerializeField]
-    Text scoreText;
+    private Text scoreText;
     [SerializeField]
-    string sceneToLoad;
+    private string sceneToLoad;
 
     public int level;
 
     public int score;
+
     // Start is called before the first frame update
-    void OnEnable()
+    private void OnEnable()
     {
         LoadData();
         ResetStars();
         scoreText.text = score.ToString();
     }
 
-    void LoadData()
+    private void LoadData()
     {
         if (GameData.Instance != null)
         {
@@ -34,7 +33,7 @@ public class LevelConfigures : MonoBehaviour
         }
     }
 
-    void ResetStars()
+    private void ResetStars()
     {
         for (int i = 0; i < starsActive; i++)
         {

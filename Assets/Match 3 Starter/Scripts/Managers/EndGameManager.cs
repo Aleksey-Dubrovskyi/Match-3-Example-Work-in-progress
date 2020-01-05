@@ -1,14 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class EndGameManager : MonoBehaviour
 {
     [SerializeField]
-    string sceneToReload;
+    private string sceneToReload;
     [SerializeField]
-    string backToMenuScene;
+    private string backToMenuScene;
     public void Restart()
     {
         SceneManager.LoadScene(sceneToReload);
