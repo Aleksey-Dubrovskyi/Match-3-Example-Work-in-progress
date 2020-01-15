@@ -70,6 +70,11 @@ public class PauseButton : MonoBehaviour
 
     public void ExitButton()
     {
+        if (!GameData.Instance.saveData.isCompleted[BoardManager.instance.level])
+        {
+            GameData.Instance.saveData.highScores[BoardManager.instance.level] = 0;
+            GameData.Instance.saveData.stars[BoardManager.instance.level] = 0;
+        }
         if (SFXManager.Instance.isActiveAndEnabled)
         {
             SFXManager.Instance.PlaySFX(Clip.Click);

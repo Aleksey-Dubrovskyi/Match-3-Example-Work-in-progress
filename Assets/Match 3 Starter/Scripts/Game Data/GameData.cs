@@ -9,6 +9,7 @@ public class SaveData
     public bool[] isActive;
     public int[] highScores;
     public int[] stars;
+    public bool[] isCompleted; 
 }
 
 
@@ -49,7 +50,10 @@ public class GameData : MonoBehaviour
 
     private void OnDisable()
     {
-        Save();
+        if (BoardManager.instance.gameState != GameState.lose)
+        {
+            Save();
+        }
     }
 
     public void Load()
