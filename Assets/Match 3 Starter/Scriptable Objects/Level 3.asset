@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level 3
   m_EditorClassIdentifier: 
   xSize: 7
-  ySize: 9
+  ySize: 7
   boardLayout:
   - x: 0
     y: 0
@@ -27,47 +27,47 @@ MonoBehaviour:
   - x: 1
     y: 1
     tileKind: 1
-  - x: 2
+  - x: 5
     y: 0
     tileKind: 1
-  - x: 2
+  - x: 5
     y: 1
     tileKind: 1
   - x: 6
     y: 0
     tileKind: 1
-  - x: 7
-    y: 0
+  - x: 6
+    y: 1
     tileKind: 1
   - x: 6
     y: 0
     tileKind: 1
-  - x: 7
+  - x: 6
     y: 1
     tileKind: 1
   - x: 0
-    y: 8
+    y: 5
     tileKind: 1
   - x: 0
-    y: 9
+    y: 6
     tileKind: 1
   - x: 1
-    y: 8
+    y: 5
     tileKind: 1
   - x: 1
-    y: 9
+    y: 6
     tileKind: 1
-  - x: 7
-    y: 8
+  - x: 5
+    y: 6
     tileKind: 1
-  - x: 7
-    y: 9
+  - x: 5
+    y: 5
     tileKind: 1
-  - x: 8
-    y: 8
+  - x: 6
+    y: 6
     tileKind: 1
-  - x: 8
-    y: 9
+  - x: 6
+    y: 5
     tileKind: 1
   characterTiles:
   - {fileID: 21300000, guid: 093363a40d9c07a4082e1c0f82d20fc3, type: 3}
@@ -77,10 +77,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e3169e90983853d4d9d73233512118e2, type: 3}
   - {fileID: 21300000, guid: dca7a45bef5bffa4395181b03e04d081, type: 3}
   - {fileID: 21300000, guid: 6e84ec6047673d440aa377e4980bfea8, type: 3}
-  scoreGoals: dc050000d0070000b80b0000
+  scoreGoals: f4010000dc050000d0070000
   requiaraments:
     gameType: 0
-    ammount: 30
+    ammount: 40
   levelGoals:
   - numberNeeded: 20
     numberColected: 0

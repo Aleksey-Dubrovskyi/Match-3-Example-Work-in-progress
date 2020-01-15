@@ -32,11 +32,6 @@ public class GameData : MonoBehaviour
         Load();
     }
 
-    private void Start()
-    {
-
-    }
-
     public void Save()
     {
         BinaryFormatter formatter = new BinaryFormatter();

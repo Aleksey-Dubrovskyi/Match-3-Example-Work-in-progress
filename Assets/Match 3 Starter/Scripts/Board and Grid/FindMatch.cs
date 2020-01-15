@@ -58,14 +58,17 @@ public class FindMatch : MonoBehaviour
         if (tile1.isRowBomb)
         {
             allMatches.Union(GetRowTiles(tile1.row));
+            BoardManager.instance.BombRow(tile1.row);
         }
         if (tile2.isRowBomb)
         {
             allMatches.Union(GetRowTiles(tile2.row));
+            BoardManager.instance.BombRow(tile2.row);
         }
         if (tile3.isRowBomb)
         {
             allMatches.Union(GetRowTiles(tile3.row));
+            BoardManager.instance.BombRow(tile3.row);
         }
         return currenTiles;
     }
@@ -76,21 +79,23 @@ public class FindMatch : MonoBehaviour
         if (tile1.isColumnBomb)
         {
             allMatches.Union(GetColumnTiles(tile1.column));
+            BoardManager.instance.BombRow(tile1.column);
         }
         if (tile2.isColumnBomb)
         {
             allMatches.Union(GetColumnTiles(tile2.column));
+            BoardManager.instance.BombRow(tile2.column);
         }
         if (tile3.isColumnBomb)
         {
             allMatches.Union(GetColumnTiles(tile3.column));
+            BoardManager.instance.BombRow(tile3.column);
         }
         return currenTiles;
     }
 
     private IEnumerator FindMatchCo()
     {
-        yield return null;
         for (int x = 0; x < BoardManager.instance.xSize; x++)
         {
             for (int y = 0; y < BoardManager.instance.ySize; y++)
@@ -135,6 +140,7 @@ public class FindMatch : MonoBehaviour
                 }
             }
         }
+        yield return null;
     }
 
     public void MatchPicesOfTile(Sprite sprite)

@@ -20,16 +20,30 @@ public class Requiarament
 public class GUIManager : MonoBehaviour
 {
     public static GUIManager instance;
+    [Header("Game type")]
     public Requiarament requiarament;
+    [SerializeField]
+    private Text gameTypeText;
+    [Header("Game panel  UI")]
     public GameObject gameOverPanel;
     [SerializeField]
     private GameObject winGameWindow;
     public GameObject bottomUI;
-    public Text yourScoreTxt;
-    public Text highScoreTxt;
+    [SerializeField]
+    private Image[] stars;
 
+    [Header("Lose panel text")]
+    public Text yourScoreTxtL;
+    public Text highScoreTxtL;
+
+    [Header("Win panel Text")]
+    public Text yourScoreTxtW;
+    public Text highScoreTxtW;
+
+    [Header("Comon variables")]
     public Text scoreTxt;
     public Text moveCounterTxt;
+    private int numberStars;
 
     private int score;
     private int ammountOFMoves;
@@ -91,6 +105,16 @@ public class GUIManager : MonoBehaviour
                 int lenght = BoardManager.instance.scoreGoals.Length;
                 scoreBar.fillAmount = score / (float)BoardManager.instance.scoreGoals[lenght - 1];
             }
+
+            for (int i = 0; i < BoardManager.instance.scoreGoals.Length; i++)
+            {
+                if (score > BoardManager.instance.scoreGoals[i] && numberStars < i + 1)
+                {
+                    stars[numberStars].enabled = true;
+                    numberStars++;
+                }
+            }
+
             if (GameData.Instance != null)
             {
                 int hightScore = GameData.Instance.saveData.highScores[BoardManager.instance.level];
@@ -98,7 +122,13 @@ public class GUIManager : MonoBehaviour
                 {
                     GameData.Instance.saveData.highScores[BoardManager.instance.level] = score;
                 }
+                int currentStars = GameData.Instance.saveData.stars[BoardManager.instance.level];
+                if (numberStars > currentStars)
+                {
+                    GameData.Instance.saveData.stars[BoardManager.instance.level] = numberStars;
+                }
                 GameData.Instance.Save();
+
             }
             scoreTxt.text = "Score: " + score.ToString();
         }
@@ -108,7 +138,10 @@ public class GUIManager : MonoBehaviour
     {
         while (ammountOFMoves > 0)
         {
-            if (BoardManager.instance != null && BoardManager.instance.gameState != GameState.pause)
+            if (BoardManager.instance != null &&
+                (BoardManager.instance.gameState != GameState.pause
+                || BoardManager.instance.gameState != GameState.lose
+                || BoardManager.instance.gameState != GameState.win))
             {
                 MoveTimer--;
             }
@@ -128,10 +161,11 @@ public class GUIManager : MonoBehaviour
             ammountOFMoves = value;
             if (ammountOFMoves <= 0)
             {
+                StartCoroutine(WaitForShiftingLose());
                 ammountOFMoves = 0;
                 BoardManager.instance.gameState = GameState.lose;
-                gameOverPanel.SetActive(true);
             }
+            gameTypeText.text = "Time";
             moveCounterTxt.text = ammountOFMoves.ToString();
         }
     }
@@ -147,9 +181,10 @@ public class GUIManager : MonoBehaviour
             ammountOFMoves = value;
             if (ammountOFMoves <= 0 && BoardManager.instance.gameState != GameState.win)
             {
-                StartCoroutine(WaitForShifting());
+                StartCoroutine(WaitForShiftingLose());
                 ammountOFMoves = 0;
             }
+            gameTypeText.text = "Moves";
             moveCounterTxt.text = ammountOFMoves.ToString();
         }
     }
@@ -158,44 +193,50 @@ public class GUIManager : MonoBehaviour
     public void GameOver()
     {
         BoardManager.instance.gameState = GameState.lose;
-        GameManager.instance.gameOver = true;
         bottomUI.SetActive(false);
         gameOverPanel.SetActive(true);
 
-        yourScoreTxt.text = score.ToString();
-        if (score > PlayerPrefs.GetInt("HighScore"))
+        yourScoreTxtL.text = score.ToString();
+        if (score > GameData.Instance.saveData.highScores[BoardManager.instance.level])
         {
-            PlayerPrefs.SetInt("HighScore", score);
-            highScoreTxt.text = "New Best: " + PlayerPrefs.GetInt("HighScore").ToString();
+            //PlayerPrefs.SetInt("HighScore", score);
+            highScoreTxtL.text = "New Best: " + GameData.Instance.saveData.highScores[BoardManager.instance.level];
         }
         else
         {
-            highScoreTxt.text = /*"Best: " + */ PlayerPrefs.GetInt("HighScore").ToString();
+            highScoreTxtL.text = /*"Best: " + */ GameData.Instance.saveData.highScores[BoardManager.instance.level].ToString();
         }
     }
 
     public void WinGameWindow()
     {
-        BoardManager.instance.gameState = GameState.win;
-        winGameWindow.SetActive(true);
-
-        yourScoreTxt.text = score.ToString();
-        if (score > PlayerPrefs.GetInt("HighScore"))
-        {
-            PlayerPrefs.SetInt("HighScore", score);
-            highScoreTxt.text = "New Best: " + PlayerPrefs.GetInt("HighScore").ToString();
-        }
-        else
-        {
-            highScoreTxt.text = /*"Best: " + */ PlayerPrefs.GetInt("HighScore").ToString();
-        }
+        StartCoroutine(WaitForShiftingWin());
     }
 
-    private IEnumerator WaitForShifting()
+    private IEnumerator WaitForShiftingLose()
     {
         yield return new WaitUntil(() => BoardManager.instance.isShifring == false);
         yield return new WaitForSeconds(.5f);
         GameOver();
+    }
+
+    private IEnumerator WaitForShiftingWin()
+    {
+        yield return new WaitUntil(() => BoardManager.instance.isShifring == false);
+        yield return new WaitForSeconds(.5f);
+        BoardManager.instance.gameState = GameState.win;
+        winGameWindow.SetActive(true);
+
+        yourScoreTxtW.text = score.ToString();
+        if (score > GameData.Instance.saveData.highScores[BoardManager.instance.level])
+        {
+            //PlayerPrefs.SetInt("HighScore", score);
+            highScoreTxtW.text = "New Best: " + GameData.Instance.saveData.highScores[BoardManager.instance.level];
+        }
+        else
+        {
+            highScoreTxtW.text = /*"Best: " + */ GameData.Instance.saveData.highScores[BoardManager.instance.level].ToString();
+        }
     }
 
 }

@@ -17,8 +17,8 @@ public enum TyleKind
     Blank,
     Normal,
     Locktile,
-    Concrete,
-    Slime
+    Iceblock,
+    Chocolate
 }
 
 [System.Serializable]
@@ -76,19 +76,28 @@ public class BoardManager : MonoBehaviour
     [SerializeField]
     private GameObject iceTilePrefab;
     [SerializeField]
+    private GameObject chocolatePrefab;
+    private bool makeChocolate;
+    [SerializeField]
     private List<Sprite> characters = new List<Sprite>();
 
+
     public Tiles currentTile;
+
+    [Header("Tyle arrays")]
     private BackgroundTile[,] breakbleTiles;
     public GameObject[,] allTiles;
     public BackgroundTile[,] lockTiles;
     private BackgroundTile[,] iceblockTiles;
+    private BackgroundTile[,] chocolateTiles;
     private bool[,] blankSpaces;
+
     public MatchType matchType;
 
     private void Awake()
     {
         instance = GetComponent<BoardManager>();
+        gameState = GameState.pause;
         if (PlayerPrefs.HasKey("Current Level"))
         {
             level = PlayerPrefs.GetInt("Current Level");
@@ -111,10 +120,10 @@ public class BoardManager : MonoBehaviour
 
     private void Start()
     {
-        gameState = GameState.pause;
         breakbleTiles = new BackgroundTile[xSize, ySize];
         lockTiles = new BackgroundTile[xSize, ySize];
         iceblockTiles = new BackgroundTile[xSize, ySize];
+        chocolateTiles = new BackgroundTile[xSize, ySize];
         blankSpaces = new bool[xSize, ySize];
         allTiles = new GameObject[xSize, ySize];
         SetUp();
@@ -161,11 +170,24 @@ public class BoardManager : MonoBehaviour
     {
         for (int i = 0; i < boardLayout.Length; i++)
         {
-            if (boardLayout[i].tileKind == TyleKind.Concrete)
+            if (boardLayout[i].tileKind == TyleKind.Iceblock)
             {
                 Vector2 tempPosition = new Vector2(boardLayout[i].x, boardLayout[i].y);
                 GameObject tile = Instantiate(iceTilePrefab, tempPosition, Quaternion.identity);
                 iceblockTiles[boardLayout[i].x, boardLayout[i].y] = tile.GetComponent<BackgroundTile>();
+            }
+        }
+    }
+
+    private void GenerateChocolateTiles()
+    {
+        for (int i = 0; i < boardLayout.Length; i++)
+        {
+            if (boardLayout[i].tileKind == TyleKind.Chocolate)
+            {
+                Vector2 tempPosition = new Vector2(boardLayout[i].x, boardLayout[i].y);
+                GameObject tile = Instantiate(chocolatePrefab, tempPosition, Quaternion.identity);
+                chocolateTiles[boardLayout[i].x, boardLayout[i].y] = tile.GetComponent<BackgroundTile>();
             }
         }
     }
@@ -178,11 +200,12 @@ public class BoardManager : MonoBehaviour
         GenerateBreakbleTiles();
         GenerateLockTiles();
         GenerateIceblockTiles();
+        GenerateChocolateTiles();
         for (int x = 0; x < xSize; x++)
         {
             for (int y = 0; y < ySize; y++)
             {
-                if (!blankSpaces[x, y] && !iceblockTiles[x, y])
+                if (!blankSpaces[x, y] && !iceblockTiles[x, y] && !chocolateTiles[x, y])
                 {
                     Vector2 tempPos = new Vector2(x, y + offset);
                     GameObject backgroundTile = Instantiate(tilePrefab, tempPos, Quaternion.identity);
@@ -211,7 +234,7 @@ public class BoardManager : MonoBehaviour
         yield return new WaitForSeconds(refilDelay);
         if (IsDeadlocked())
         {
-            ShuffleBoard();
+            StartCoroutine(ShuffleBoard());
         }
     }
 
@@ -240,15 +263,14 @@ public class BoardManager : MonoBehaviour
                     continue;
                 }
 
-                Sprite thisTileSprite = thisTile.GetComponent<SpriteRenderer>().sprite;
-                Sprite nextTileSprite = nextTile.GetComponent<SpriteRenderer>().sprite;
+                //Sprite nextTileSprite = nextTile.GetComponent<SpriteRenderer>().sprite;
 
-                if (nextTile.column == thisTile.column && nextTileSprite == sprite)
+                if (nextTile.column == thisTile.column && nextTile.GetComponent<SpriteRenderer>().sprite == sprite)
                 {
                     columnMatch++;
                 }
 
-                if (nextTile.row == thisTile.row && nextTileSprite == sprite)
+                if (nextTile.row == thisTile.row && nextTile.GetComponent<SpriteRenderer>().sprite == sprite)
                 {
                     rowMatch++;
                 }
@@ -340,6 +362,36 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    public void BombRow(int row)
+    {
+        for (int x = 0; x < xSize; x++)
+        {
+            if (iceblockTiles[x, row])
+            {
+                iceblockTiles[x, row].TakeDamage(1);
+                if (iceblockTiles[x, row].hitPoints <= 0)
+                {
+                    iceblockTiles[x, row] = null;
+                }
+            }
+        }
+    }
+
+    public void BombColumn(int column)
+    {
+        for (int x = 0; x < xSize; x++)
+        {
+            if (iceblockTiles[column, x])
+            {
+                iceblockTiles[column, x].TakeDamage(1);
+                if (iceblockTiles[column, x].hitPoints <= 0)
+                {
+                    iceblockTiles[column, x] = null;
+                }
+            }
+        }
+    }
+
     private void DestroyMatchesAt(int column, int row)
     {
         if (allTiles[column, row].GetComponent<Tiles>().isMatched)
@@ -364,6 +416,7 @@ public class BoardManager : MonoBehaviour
             }
 
             DamageIceblock(column, row);
+            DamageChocolate(column, row);
 
             if (GoalManager.Instance != null)
             {
@@ -374,7 +427,10 @@ public class BoardManager : MonoBehaviour
             Destroy(particlePrefab, .5f);
             Destroy(allTiles[column, row]);
             GUIManager.instance.Score += (scoreForOneTile * streakValue);
-            SFXManager.instance.PlaySFX(Clip.Clear);
+            if (SFXManager.Instance.isActiveAndEnabled)
+            {
+                SFXManager.Instance.PlaySFX(Clip.Clear);
+            }
             allTiles[column, row] = null;
         }
     }
@@ -427,6 +483,58 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    private void DamageChocolate(int column, int row)
+    {
+        if (column > 0)
+        {
+            if (chocolateTiles[column - 1, row])
+            {
+                chocolateTiles[column - 1, row].TakeDamage(1);
+                if (chocolateTiles[column - 1, row].hitPoints <= 0)
+                {
+                    chocolateTiles[column - 1, row] = null;
+                }
+                makeChocolate = false;
+            }
+        }
+        if (column < xSize - 1)
+        {
+            if (chocolateTiles[column + 1, row])
+            {
+                chocolateTiles[column + 1, row].TakeDamage(1);
+                if (chocolateTiles[column + 1, row].hitPoints <= 0)
+                {
+                    chocolateTiles[column + 1, row] = null;
+                }
+                makeChocolate = false;
+            }
+        }
+        if (row > 0)
+        {
+            if (chocolateTiles[column, row - 1])
+            {
+                chocolateTiles[column, row - 1].TakeDamage(1);
+                if (chocolateTiles[column, row - 1].hitPoints <= 0)
+                {
+                    chocolateTiles[column, row - 1] = null;
+                }
+                makeChocolate = false;
+            }
+        }
+        if (row < ySize - 1)
+        {
+            if (chocolateTiles[column, row + 1])
+            {
+                chocolateTiles[column, row + 1].TakeDamage(1);
+                if (chocolateTiles[column, row + 1].hitPoints <= 0)
+                {
+                    chocolateTiles[column, row + 1] = null;
+                }
+                makeChocolate = false;
+            }
+        }
+    }
+
     public void DestroyMatches()
     {
         if (FindMatch.instance.allMatches.Count >= 4)
@@ -453,7 +561,7 @@ public class BoardManager : MonoBehaviour
         {
             for (int y = 0; y < ySize; y++)
             {
-                if (!blankSpaces[x, y] && allTiles[x, y] == null)
+                if (!blankSpaces[x, y] && allTiles[x, y] == null && !iceblockTiles[x, y] && !chocolateTiles[x, y])
                 {
                     for (int i = y + 1; i < ySize; i++)
                     {
@@ -467,7 +575,7 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
-        yield return new WaitForSeconds(refilDelay * 2f);
+        yield return new WaitForSeconds(refilDelay * 0.5f);
         StartCoroutine(FillBoard());
     }
 
@@ -477,7 +585,7 @@ public class BoardManager : MonoBehaviour
         {
             for (int y = 0; y < ySize; y++)
             {
-                if (allTiles[x, y] == null && !blankSpaces[x, y])
+                if (allTiles[x, y] == null && !blankSpaces[x, y] && !iceblockTiles[x, y] && !chocolateTiles[x, y])
                 {
                     Vector2 tempPos = new Vector2(x, y + offset);
                     GameObject backgroundTile = Instantiate(tilePrefab, tempPos, Quaternion.identity);
@@ -517,6 +625,7 @@ public class BoardManager : MonoBehaviour
     private IEnumerator FillBoard()
     {
         isShifring = true;
+        yield return new WaitForSeconds(refilDelay);
         RefillBoard();
         yield return new WaitForSeconds(refilDelay);
 
@@ -528,30 +637,94 @@ public class BoardManager : MonoBehaviour
         }
 
         currentTile = null;
+        CheckToMakeChocolate();
 
         if (IsDeadlocked())
         {
-            ShuffleBoard();
-            yield return new WaitForSeconds(refilDelay * 2);
-            DestroyMatches();
-            yield return new WaitForSeconds(refilDelay * 2);
+            StartCoroutine(ShuffleBoard());
         }
+
         yield return new WaitForSeconds(refilDelay);
         if (gameState != GameState.lose)
         {
             gameState = GameState.move;
+            makeChocolate = true;
         }
         streakValue = 1;
         isShifring = false;
     }
 
+    private void CheckToMakeChocolate()
+    {
+        for (int x = 0; x < xSize; x++)
+        {
+            for (int y = 0; y < ySize; y++)
+            {
+                if (chocolateTiles[x, y] != null && makeChocolate)
+                {
+                    MakeNewChocolate();
+                }
+            }
+        }
+    }
+
+    private Vector2 CheckForAdjacent(int column, int row)
+    {
+        if (allTiles[column + 1, row] && column < xSize - 1)
+        {
+            return Vector2.right;
+        }
+        if (allTiles[column - 1, row] && column > 0)
+        {
+            return Vector2.left;
+        }
+        if (allTiles[column, row + 1] && row < ySize - 1)
+        {
+            return Vector2.up;
+        }
+        if (allTiles[column, row - 1] && row > 0)
+        {
+            return Vector2.down;
+        }
+        return Vector2.zero;
+    }
+
+    private void MakeNewChocolate()
+    {
+        bool chocolate = false;
+        int loops = 0;
+
+        while (!chocolate && loops < 200)
+        {
+            int newX = Random.Range(0, xSize);
+            int newY = Random.Range(0, ySize);
+
+            if (chocolateTiles[newX, newY])
+            {
+                Vector2 adjacent = CheckForAdjacent(newX, newY);
+                if (adjacent != Vector2.zero && !blankSpaces[newX, newY] && !iceblockTiles[newX, newY] && !chocolateTiles[newX, newY])
+                {
+                    Destroy(allTiles[newX + (int)adjacent.x, newY + (int)adjacent.y]);
+                    Vector2 tempPos = new Vector2(newX + (int)adjacent.x, newY + (int)adjacent.y);
+                    GameObject tile = Instantiate(chocolatePrefab, tempPos, Quaternion.identity);
+                    chocolateTiles[newX + (int)adjacent.x, newY + (int)adjacent.y] = tile.GetComponent<BackgroundTile>();
+                    chocolate = true;
+                }
+            }
+            loops++;
+        }
+    }
+
     //Deadlock section
     private void SwitchPieces(int column, int row, Vector2 direction)
     {
-        GameObject holder = allTiles[column + (int)direction.x, row + (int)direction.y] as GameObject;
+        if (allTiles[column + (int)direction.x, row + (int)direction.y] != null)
+        {
+            GameObject holder = allTiles[column + (int)direction.x, row + (int)direction.y] as GameObject;
 
-        allTiles[column + (int)direction.x, row + (int)direction.y] = allTiles[column, row];
-        allTiles[column, row] = holder;
+            allTiles[column + (int)direction.x, row + (int)direction.y] = allTiles[column, row];
+            allTiles[column, row] = holder;
+        }
     }
 
     private bool CheckForMathces()
@@ -614,24 +787,18 @@ public class BoardManager : MonoBehaviour
             {
                 if (allTiles[x, y] != null)
                 {
-                    if (x < xSize - 2)
+                    if (x < xSize - 1)
                     {
                         if (SwitchAndCheck(x, y, Vector2.right))
                         {
-                            if (!blankSpaces[x, y])
-                            {
-                                return false;
-                            }
+                            return false;
                         }
                     }
-                    if (y < ySize - 2)
+                    if (y < ySize - 1)
                     {
                         if (SwitchAndCheck(x, y, Vector2.up))
                         {
-                            if (!blankSpaces[x, y])
-                            {
-                                return false;
-                            }
+                            return false;
                         }
                     }
                 }
@@ -640,8 +807,9 @@ public class BoardManager : MonoBehaviour
         return true;
     }
 
-    private void ShuffleBoard()
+    private IEnumerator ShuffleBoard()
     {
+        yield return new WaitForSeconds(0.5f);
         List<GameObject> newBoard = new List<GameObject>();
         for (int x = 0; x < xSize; x++)
         {
@@ -654,11 +822,13 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        yield return new WaitForSeconds(0.5f);
+
         for (int x = 0; x < xSize; x++)
         {
             for (int y = 0; y < ySize; y++)
             {
-                if (!blankSpaces[x, y])
+                if (!blankSpaces[x, y] && !iceblockTiles[x, y] && !chocolateTiles[x, y])
                 {
                     int tileToUse = Random.Range(0, newBoard.Count);
                     Tiles tile = newBoard[tileToUse].GetComponent<Tiles>();
@@ -669,9 +839,26 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+
+        StartCoroutine(DestroyingMatchesForDeadLock());
+
         if (IsDeadlocked())
         {
-            ShuffleBoard();
+            StartCoroutine(ShuffleBoard());
+        }
+    }
+
+    private IEnumerator DestroyingMatchesForDeadLock()
+    {
+        yield return new WaitForSeconds(refilDelay);
+        FindMatch.instance.FindAllmatches();
+        yield return new WaitForSeconds(refilDelay);
+
+        while (MatchesOnBoard())
+        {
+            streakValue++;
+            DestroyMatches();
+            yield break;
         }
     }
 }

@@ -93,6 +93,11 @@ public class Tiles : MonoBehaviour
     private void OnMouseDown()
     {
         anim.SetBool("isWaiting", true);
+        if (SFXManager.Instance.isActiveAndEnabled)
+        {
+            SFXManager.Instance.PlaySFX(Clip.TileSelect);
+        }
+
         if (hintManager != null)
         {
             hintManager.DestroyHint();
@@ -150,8 +155,11 @@ public class Tiles : MonoBehaviour
                 {
                     GUIManager.instance.MoveCounter--;
                 }
+                if (SFXManager.Instance.isActiveAndEnabled)
+                {
+                    SFXManager.Instance.PlaySFX(Clip.Swap);
+                }
 
-                SFXManager.instance.PlaySFX(Clip.Swap);
                 StartCoroutine(PrefabCo());
             }
             else
@@ -223,7 +231,11 @@ public class Tiles : MonoBehaviour
                 otherPrefab.GetComponent<Tiles>().column = column;
                 row = previousRow;
                 column = previousColumn;
-                SFXManager.instance.PlaySFX(Clip.Swap);
+                if (SFXManager.Instance.isActiveAndEnabled)
+                {
+                    SFXManager.Instance.PlaySFX(Clip.Swap);
+                }
+
                 yield return new WaitForSeconds(0.5f);
                 BoardManager.instance.currentTile = null;
                 BoardManager.instance.gameState = GameState.move;
@@ -295,6 +307,7 @@ public class Tiles : MonoBehaviour
         if (!isRowBomb && !isColumnBomb && !isAdjacentBomb)
         {
             isColorBomb = true;
+            this.gameObject.GetComponent<SpriteRenderer>().sprite = null;
             GameObject color = Instantiate(colorBomb, transform.position, Quaternion.identity);
             color.transform.parent = this.transform;
         }

@@ -72,5 +72,9 @@ public class LevelSelect : MonoBehaviour
     {
         levelConfigureWindow.GetComponent<LevelConfigures>().level = levelNumber;
         levelConfigureWindow.SetActive(true);
+        if (SFXManager.Instance.isActiveAndEnabled)
+        {
+            SFXManager.Instance.PlaySFX(Clip.Click);
+        }
     }
 }

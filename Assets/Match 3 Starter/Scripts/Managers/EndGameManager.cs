@@ -10,6 +10,10 @@ public class EndGameManager : MonoBehaviour
     public void Restart()
     {
         SceneManager.LoadScene(sceneToReload);
+        if (SFXManager.Instance.isActiveAndEnabled)
+        {
+            SFXManager.Instance.PlaySFX(Clip.Click);
+        }
     }
 
     public void Next()
@@ -18,6 +22,10 @@ public class EndGameManager : MonoBehaviour
         {
             GameData.Instance.saveData.isActive[BoardManager.instance.level + 1] = true;
             GameData.Instance.Save();
+        }
+        if (SFXManager.Instance.isActiveAndEnabled)
+        {
+            SFXManager.Instance.PlaySFX(Clip.Click);
         }
         SceneManager.LoadScene(backToMenuScene);
     }

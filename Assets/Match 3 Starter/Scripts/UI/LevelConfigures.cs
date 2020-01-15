@@ -24,6 +24,14 @@ public class LevelConfigures : MonoBehaviour
         scoreText.text = score.ToString();
     }
 
+    private void OnDisable()
+    {
+        foreach (var star in stars)
+        {
+            star.enabled = false;
+        }
+    }
+
     private void LoadData()
     {
         if (GameData.Instance != null)
@@ -44,12 +52,16 @@ public class LevelConfigures : MonoBehaviour
     public void MenuButton()
     {
         this.gameObject.SetActive(false);
+        if (SFXManager.Instance.isActiveAndEnabled)
+        {
+            SFXManager.Instance.PlaySFX(Clip.Click);
+        }
     }
 
     public void PlayButton()
     {
+        SFXManager.Instance.PlaySFX(Clip.Click);
         PlayerPrefs.SetInt("Current Level", level - 1);
         SceneManager.LoadScene(sceneToLoad);
     }
-
 }

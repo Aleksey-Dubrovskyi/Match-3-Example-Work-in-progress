@@ -27,17 +27,17 @@ MonoBehaviour:
   - x: 1
     y: 1
     tileKind: 1
-  - x: 6
+  - x: 5
+    y: 0
+    tileKind: 1
+  - x: 5
     y: 1
     tileKind: 1
   - x: 6
-    y: 2
+    y: 0
     tileKind: 1
-  - x: 7
+  - x: 6
     y: 1
-    tileKind: 1
-  - x: 7
-    y: 2
     tileKind: 1
   characterTiles:
   - {fileID: 21300000, guid: 093363a40d9c07a4082e1c0f82d20fc3, type: 3}
@@ -47,17 +47,17 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e3169e90983853d4d9d73233512118e2, type: 3}
   - {fileID: 21300000, guid: dca7a45bef5bffa4395181b03e04d081, type: 3}
   - {fileID: 21300000, guid: 6e84ec6047673d440aa377e4980bfea8, type: 3}
-  scoreGoals: f4010000e8030000dc050000
+  scoreGoals: f4010000e803000014050000
   requiaraments:
     gameType: 0
-    ammount: 25
+    ammount: 30
   levelGoals:
   - numberNeeded: 10
-    numberColected: 0
+    numberColected: 12
     goalSprite: {fileID: 21300000, guid: e61a9cacb6991554e9ba8f0f19381eda, type: 3}
   - numberNeeded: 5
-    numberColected: 0
+    numberColected: 23
     goalSprite: {fileID: 21300000, guid: e3169e90983853d4d9d73233512118e2, type: 3}
   - numberNeeded: 10
-    numberColected: 0
+    numberColected: 16
     goalSprite: {fileID: 21300000, guid: 6e84ec6047673d440aa377e4980bfea8, type: 3}

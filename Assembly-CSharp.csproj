@@ -60,18 +60,19 @@
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\GoalManager.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\GoalPanel.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\HintManager.cs" />
+     <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\StartScreenSound.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Board and Grid\Tiles.cs" />
-     <Compile Include="Assets\Match 3 Starter\Scripts\Effects\FadePanelController.cs" />
-     <Compile Include="Assets\Match 3 Starter\Scripts\Effects\GUISizePingPong.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Game Data\GameData.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Managers\EndGameManager.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Managers\GUIManager.cs" />
-     <Compile Include="Assets\Match 3 Starter\Scripts\Managers\GameManager.cs" />
+     <Compile Include="Assets\Match 3 Starter\Scripts\Managers\LevelSelectManager.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Managers\SFXManager.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Scriptable objects\Level.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\Scriptable objects\World.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\UI\LevelConfigures.cs" />
      <Compile Include="Assets\Match 3 Starter\Scripts\UI\LevelSelect.cs" />
+     <Compile Include="Assets\Match 3 Starter\Scripts\UI\PauseButton.cs" />
+     <Compile Include="Assets\Match 3 Starter\Scripts\UI\StartScreen.cs" />
      <None Include="Assets\Match 3 Starter\Audio\Music\Attribution.txt" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>B:/unity projects/Match 3 Example/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
