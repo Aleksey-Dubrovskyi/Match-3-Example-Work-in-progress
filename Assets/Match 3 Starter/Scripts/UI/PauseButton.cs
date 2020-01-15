@@ -39,7 +39,7 @@ public class PauseButton : MonoBehaviour
         else
         {
             soundButton.GetComponent<Image>().sprite = soundOn;
-            sFXManager.SetActive(false);
+            sFXManager.SetActive(true);
         }
     }
 

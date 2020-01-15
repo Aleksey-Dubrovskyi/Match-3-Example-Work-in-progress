@@ -27,7 +27,7 @@ public class SFXManager : MonoBehaviour
         }
         else
         {
-            this.gameObject.SetActive(false);
+            this.gameObject.SetActive(true);
         }
         //if (Instance == null)
         //{
