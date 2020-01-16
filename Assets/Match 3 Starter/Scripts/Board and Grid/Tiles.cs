@@ -151,16 +151,17 @@ public class Tiles : MonoBehaviour
                 otherPrefab.GetComponent<Tiles>().row += -1 * (int)direction.y;
                 column += (int)direction.x;
                 row += (int)direction.y;
-                if (GUIManager.instance.requiarament.gameType == GameType.Moves)
-                {
-                    GUIManager.instance.MoveCounter--;
-                }
+                //if (GUIManager.instance.requiarament.gameType == GameType.Moves) Moves decremnts by swap
+                //{
+                //    GUIManager.instance.MoveCounter--;
+                //}
                 if (SFXManager.Instance.isActiveAndEnabled)
                 {
                     SFXManager.Instance.PlaySFX(Clip.Swap);
                 }
 
                 StartCoroutine(PrefabCo());
+
             }
             else
             {
@@ -242,6 +243,10 @@ public class Tiles : MonoBehaviour
             }
             else
             {
+                if (GUIManager.instance.requiarament.gameType == GameType.Moves) //Moves decremnts only when isMatched
+                {
+                    GUIManager.instance.MoveCounter--;
+                }
                 BoardManager.instance.DestroyMatches();
             }
         }

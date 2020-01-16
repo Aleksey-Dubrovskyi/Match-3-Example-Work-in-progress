@@ -127,10 +127,7 @@ public class GUIManager : MonoBehaviour
                 {
                     GameData.Instance.saveData.stars[BoardManager.instance.level] = numberStars;
                 }
-                if (BoardManager.instance.gameState != GameState.lose)
-                {
-                    GameData.Instance.Save();
-                }
+                    GameData.Instance.Save();                
             }
             scoreTxt.text = "Score: " + score.ToString();
         }

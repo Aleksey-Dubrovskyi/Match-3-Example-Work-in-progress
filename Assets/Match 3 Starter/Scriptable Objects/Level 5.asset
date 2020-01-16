@@ -114,9 +114,6 @@ MonoBehaviour:
   - x: 3
     y: 5
     tileKind: 0
-  - x: 4
-    y: 5
-    tileKind: 0
   - x: 5
     y: 5
     tileKind: 0
@@ -191,8 +188,8 @@ MonoBehaviour:
   scoreGoals: dc050000c409000088130000
   requiaraments:
     gameType: 1
-    ammount: 600
+    ammount: 300
   levelGoals:
-  - numberNeeded: 47
+  - numberNeeded: 48
     numberColected: 0
     goalSprite: {fileID: 21300000, guid: 5c1f2e04cd4324948901ed6611288928, type: 3}

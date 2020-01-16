@@ -50,10 +50,7 @@ public class GameData : MonoBehaviour
 
     private void OnDisable()
     {
-        if (BoardManager.instance.gameState != GameState.lose)
-        {
-            Save();
-        }
+            Save();        
     }
 
     public void Load()
@@ -71,7 +68,12 @@ public class GameData : MonoBehaviour
             saveData.isActive = new bool[100];
             saveData.stars = new int[100];
             saveData.highScores = new int[100];
+            //for (int i = 0; i < 8; i++) //Use this to unlock levels for build
+            //{
+            //    saveData.isActive[i] = true;
+            //}
             saveData.isActive[0] = true;
+            saveData.isCompleted = new bool[100];
         }
     }
 }

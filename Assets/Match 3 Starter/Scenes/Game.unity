@@ -573,6 +573,7 @@ MonoBehaviour:
     isActive: 01000000
     highScores: 00000000000000000000000000000000
     stars: 00000000000000000000000000000000
+    isCompleted: 
 --- !u!4 &168284134
 Transform:
   m_ObjectHideFlags: 0
@@ -2463,7 +2464,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 0, g: 0, b: 0, a: 0.8156863}
-  m_EffectDistance: {x: -15, y: 15}
+  m_EffectDistance: {x: 15, y: -15}
   m_UseGraphicAlpha: 1
 --- !u!114 &1128019623
 MonoBehaviour:

@@ -77,7 +77,7 @@ public class BoardManager : MonoBehaviour
     private GameObject iceTilePrefab;
     [SerializeField]
     private GameObject chocolatePrefab;
-    private bool makeChocolate;
+    private bool makeChocolate = true;
     [SerializeField]
     private List<Sprite> characters = new List<Sprite>();
 
@@ -648,8 +648,8 @@ public class BoardManager : MonoBehaviour
         if (gameState != GameState.lose)
         {
             gameState = GameState.move;
-            makeChocolate = true;
         }
+        makeChocolate = true;
         streakValue = 1;
         isShifring = false;
     }
@@ -663,6 +663,7 @@ public class BoardManager : MonoBehaviour
                 if (chocolateTiles[x, y] != null && makeChocolate)
                 {
                     MakeNewChocolate();
+                    return;
                 }
             }
         }
@@ -702,7 +703,7 @@ public class BoardManager : MonoBehaviour
             if (chocolateTiles[newX, newY])
             {
                 Vector2 adjacent = CheckForAdjacent(newX, newY);
-                if (adjacent != Vector2.zero && !blankSpaces[newX, newY] && !iceblockTiles[newX, newY] && !chocolateTiles[newX, newY])
+                if (adjacent != Vector2.zero)
                 {
                     Destroy(allTiles[newX + (int)adjacent.x, newY + (int)adjacent.y]);
                     Vector2 tempPos = new Vector2(newX + (int)adjacent.x, newY + (int)adjacent.y);
@@ -733,7 +734,7 @@ public class BoardManager : MonoBehaviour
         {
             for (int y = 0; y < ySize; y++)
             {
-                if (allTiles[x, y] != null)
+                if (allTiles[x, y] != null && allTiles[x, y] != lockTiles[x, y])
                 {
                     if (x < xSize - 2)
                     {

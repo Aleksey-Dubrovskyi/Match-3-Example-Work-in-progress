@@ -40,9 +40,9 @@ public class FindMatch : MonoBehaviour
         if (!allMatches.Contains(tile))
         {
             allMatches.Add(tile);
-        }
-
+        }        
         tile.GetComponent<Tiles>().isMatched = true;
+
     }
 
     private void GetNearbyTile(GameObject tile1, GameObject tile2, GameObject tile3)
@@ -101,7 +101,7 @@ public class FindMatch : MonoBehaviour
             for (int y = 0; y < BoardManager.instance.ySize; y++)
             {
                 GameObject currentTile = BoardManager.instance.allTiles[x, y];
-                if (currentTile != null)
+                if (currentTile != null && currentTile != BoardManager.instance.lockTiles[x, y])
                 {
                     if (x > 0 && x < BoardManager.instance.xSize - 1)
                     {
@@ -115,6 +115,7 @@ public class FindMatch : MonoBehaviour
                                 allMatches.Union(IsColumnBomb(currentTile.GetComponent<Tiles>(), leftTile.GetComponent<Tiles>(), rightTile.GetComponent<Tiles>()));
                                 allMatches.Union(IsAdjacentBomb(currentTile.GetComponent<Tiles>(), leftTile.GetComponent<Tiles>(), rightTile.GetComponent<Tiles>()));
                                 GetNearbyTile(leftTile, currentTile, rightTile);
+
                             }
                         }
                     }
